@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no"/>
-  <title>Чи‑Фань Аналитика</title>
+  <title>Чи‑Фань · Итоги + Премия</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
     :root {
@@ -26,30 +26,77 @@
       --btn-danger-border: #ef4444;
       --input-bg: #0f1219;
       --input-text: #e8edf5;
-      transition: background-color 0.6s ease, color 0.6s ease;
+      transition: background-color 1.1s ease, color 1.1s ease;
     }
 
     * { box-sizing: border-box; }
     body {
       margin: 0;
-      font: 16px/1.45 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      font: 14px/1.45 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: var(--bg);
       color: var(--text);
-      padding: 16px;
-      padding-bottom: 60px; /* Для кнопки Telegram */
+      padding: 12px;
+      padding-bottom: 70px;
     }
     
     .header {
       text-align: center;
-      margin-bottom: 20px;
+      margin-bottom: 16px;
       padding: 16px;
       background: var(--card);
       border-radius: 16px;
       border: 1px solid var(--border);
     }
     
-    h1 { font-size: 20px; margin: 0 0 6px; }
-    .sub { color: var(--mut); font-size: 13px; }
+    h1 { font-size: 18px; margin: 0 0 4px; }
+    .sub { color: var(--mut); font-size: 12px; }
+    
+    .controls {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    
+    .control-group {
+      flex: 1;
+      min-width: 120px;
+    }
+    
+    select, input, button, textarea {
+      background: var(--input-bg);
+      color: var(--input-text);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      outline: none;
+      width: 100%;
+      font-size: 14px;
+    }
+    
+    button {
+      cursor: pointer;
+      border: 1px solid var(--btn-border);
+      background: var(--btn-bg);
+      color: var(--btn-text);
+      border-radius: 12px;
+      transition: .2s ease;
+    }
+    
+    button:hover {
+      transform: translateY(-1px);
+      background: var(--btn-hover);
+    }
+    
+    .btn-primary {
+      border-color: var(--btn-primary-border);
+      background: var(--btn-primary-bg);
+    }
+    
+    .btn-danger {
+      border-color: var(--btn-danger-border);
+      background: var(--btn-danger-bg);
+    }
     
     .grid {
       display: grid;
@@ -61,9 +108,17 @@
       grid-template-columns: repeat(2, 1fr);
     }
     
-    @media (max-width: 480px) {
-      .grid.kpi {
-        grid-template-columns: 1fr;
+    .grid.two {
+      grid-template-columns: 1fr;
+    }
+    
+    .grid.three {
+      grid-template-columns: 1fr;
+    }
+    
+    @media (min-width: 480px) {
+      .grid.two {
+        grid-template-columns: repeat(2, 1fr);
       }
     }
     
@@ -75,23 +130,36 @@
       position: relative;
     }
     
-    .title { font-size: 13px; color: var(--mut); margin-bottom: 8px; }
-    .knum { font-weight: 700; font-size: 24px; margin: 4px 0; }
-    .mut { color: var(--mut); font-size: 12px; }
-    .mono { font-family: 'Courier New', monospace; font-size: 12px; }
+    .title { font-size: 12px; color: var(--mut); margin-bottom: 6px; }
+    .knum { font-weight: 700; font-size: 22px; margin: 4px 0; }
+    .mut { color: var(--mut); font-size: 11px; }
+    .mono { font-family: 'Courier New', monospace; font-size: 11px; }
     
     .pill {
-      display: inline-block;
+      display: inline-flex;
+      align-items: center;
       font-size: 11px;
       padding: 4px 8px;
       border-radius: 999px;
       border: 1px solid var(--border);
-      margin-top: 8px;
     }
     
     .pill.good { border-color: #1f5132; color: #34d399; background: #0d1f14; }
     .pill.warn { border-color: #5a410e; color: #fbbf24; background: #1d1507; }
     .pill.bad { border-color: #512228; color: #f87171; background: #1a0f10; }
+    
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      border: 1px solid var(--border);
+    }
+    
+    .badge.healthy { background: #0d1f14; color: #34d399; border-color: #1f5132; }
+    .badge.middle { background: #1d1507; color: #fbbf24; border-color: #5a410e; }
+    .badge.risky { background: #1a0f10; color: #f87171; border-color: #512228; }
     
     .bar {
       height: 6px;
@@ -108,6 +176,26 @@
       border-radius: 99px;
     }
     
+    .split { 
+      display: flex; 
+      gap: 12px; 
+      align-items: center; 
+      justify-content: space-between; 
+      flex-wrap: wrap; 
+    }
+    
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    
+    .table th, .table td {
+      padding: 8px 6px;
+      border-bottom: 1px dashed var(--border);
+      text-align: left;
+    }
+    
     .section-title {
       font-size: 16px;
       font-weight: 600;
@@ -122,53 +210,138 @@
       color: var(--btn-text);
       border: 1px solid var(--btn-primary-border);
       border-radius: 12px;
-      font-size: 16px;
-      margin: 8px 0;
+      font-size: 14px;
+      margin: 6px 0;
       cursor: pointer;
+    }
+    
+    .action-buttons {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin: 12px 0;
+    }
+    
+    /* Адаптация для мобильных устройств */
+    @media (max-width: 360px) {
+      .grid.kpi {
+        grid-template-columns: 1fr;
+      }
+      
+      .controls {
+        flex-direction: column;
+      }
+      
+      .action-buttons {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
 <body>
   <div class="header">
-    <h1>Чи-Фань Аналитика</h1>
-    <div class="sub">Telegram Mini App • Режим просмотра</div>
+    <h1>🍜 Чи-Фань — Итоги + Премия</h1>
+    <div class="sub">3% × Выручка × ramp(95–100%) × Quality</div>
   </div>
 
-  <div class="grid kpi" id="kpi-grid">
-    <!-- KPI карточки будут сгенерированы JavaScript -->
-  </div>
-
-  <div class="card">
-    <div class="title">Выполнение плана по выручке</div>
-    <div class="knum" id="kpi-fulfill-label">—</div>
-    <div class="bar">
-      <i id="bar-fulfill" style="width: 0%"></i>
+  <div class="controls">
+    <div class="control-group">
+      <label class="mut">Период</label>
+      <input type="month" id="m" />
     </div>
-    <div style="display: flex; justify-content: space-between; font-size: 12px;">
-      <span>Факт: <span id="lbl-rev-fact" class="mono">—</span></span>
-      <span>План: <span id="lbl-rev-plan" class="mono">—</span></span>
+    <div class="control-group">
+      <label class="mut">Филиал</label>
+      <select id="b"></select>
     </div>
   </div>
 
-  <div class="card">
-    <div class="title">Премия к выплате</div>
-    <div class="knum" id="bonus-amount">—</div>
-    <div class="mut" id="bonus-info">Расчет по формуле: 3% × Выручка × ramp × Quality</div>
-    <div id="bonus-elig" class="pill" style="margin-top: 12px;">—</div>
+  <div class="action-buttons">
+    <button class="btn-primary" id="edit">✏️ Редактировать</button>
+    <button id="btn-compare">📊 Сравнить</button>
+    <button id="export">📤 Экспорт</button>
+    <button class="btn-danger" id="reset">🔄 Сброс</button>
   </div>
 
-  <div class="section-title">Действия</div>
-  
-  <button class="tg-button" onclick="switchBranch()">🔄 Сменить филиал</button>
-  <button class="tg-button" onclick="exportData()">📤 Экспорт данных</button>
-  <button class="tg-button" onclick="showHelp()">❓ Помощь</button>
+  <div class="grid kpi" id="kpi-grid"></div>
+
+  <div class="grid three">
+    <section class="card">
+      <div class="split">
+        <div>
+          <div class="title">Выполнение плана</div>
+          <div class="knum" id="kpi-fulfill-label">—</div>
+        </div>
+        <div class="pill" id="pill-gap">Гэп: —</div>
+      </div>
+      <div class="bar"><i id="bar-fulfill" style="width:0%"></i></div>
+      <div style="display: flex; justify-content: space-between; font-size: 11px;">
+        <span>Факт: <span id="lbl-rev-fact" class="mono">—</span></span>
+        <span>План: <span id="lbl-rev-plan" class="mono">—</span></span>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="split">
+        <div>
+          <div class="title">Доля доставки</div>
+          <div class="knum" id="kpi-delivery-label">—</div>
+        </div>
+        <div class="pill" id="delivery-pill">—</div>
+      </div>
+      <div class="mut">Цель: 35–45%</div>
+    </section>
+
+    <section class="card">
+      <div class="split">
+        <div>
+          <div class="title">Health Score</div>
+          <div class="knum"><span id="health-score">—</span></div>
+        </div>
+        <span id="health-badge" class="badge">—</span>
+      </div>
+      <div class="mut">Композитный индекс по метрикам</div>
+    </section>
+  </div>
+
+  <section class="card">
+    <div class="split">
+      <div>
+        <div class="title">Премия к выплате</div>
+        <div class="knum" id="bonus-amount">—</div>
+        <div class="mut" id="bonus-info">База: 3% от выручки × Рампа × Quality</div>
+      </div>
+      <div id="bonus-elig" class="pill">—</div>
+    </div>
+  </section>
+
+  <section class="grid two">
+    <div class="card">
+      <div class="title">Рейтинг филиалов</div>
+      <table class="table" id="tbl-rating">
+        <thead><tr><th>#</th><th>Филиал</th><th>Выполнение</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="title">Проблемы → Решения</div>
+      <textarea id="txt-notes" class="mono" style="width:100%; min-height:100px; margin-top:8px;" placeholder="Введите заметки..."></textarea>
+      <button class="tg-button" id="btn-copy" style="margin-top:8px;">📋 Копировать чек-лист</button>
+    </div>
+  </section>
 
   <script>
+    const $ = s => document.querySelector(s);
+    const $$ = s => Array.from(document.querySelectorAll(s));
+    const fmt = new Intl.NumberFormat('ru-RU');
+    const rub = n => (isFinite(n) ? fmt.format(Math.round(n)) + ' ₽' : '—');
+    const pct = x => (isFinite(x) ? (Math.round(x * 1000) / 10) + '%' : '—');
+    const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
+
     // Инициализация Telegram WebApp
-    const tg = window.Telegram.WebApp;
-    
-    // Данные приложения (аналогично вашему оригиналу)
-    const DATA = {
+    const tg = window.Telegram?.WebApp;
+
+    let DATA = {
       "month": "2025-09",
       "branches": [
         {
@@ -186,10 +359,10 @@
           "auditor_score": 88,
           "mystery_score": 85,
           "control_purchase_score": 83,
-          "notes": "Рост гостей за счёт акции по лапше."
+          "notes": "Рост гостей за счёт акции по лапше. Нужно усилить контроль качества в выходные."
         },
         {
-          "branch": "Тобольская", 
+          "branch": "Тобольская",
           "month": "2025-09",
           "revenue_plan": 3500000,
           "revenue_fact": 3290000,
@@ -207,54 +380,165 @@
         }
       ]
     };
+    const START = JSON.parse(JSON.stringify(DATA));
 
-    let currentBranchIndex = 0;
-    const fmt = new Intl.NumberFormat('ru-RU');
-    const rub = n => isFinite(n) ? fmt.format(Math.round(n)) + ' ₽' : '—';
-    const pct = x => isFinite(x) ? (Math.round(x * 1000) / 10) + '%' : '—';
+    let CFG = {
+      base_rate: 0.03,
+      ramp: { min: 0.95, max: 1.00 },
+      weights: { auditor: 0.35, control: 0.30, mystery: 0.20, reviews: 0.15 }
+    };
 
-    // Инициализация приложения
+    let TH = {
+      fulfillment: { warn: 0.95, good: 1.0 },
+      delivery: { min: 0.35, max: 0.45 },
+      reviews: { good: 4.4, warn: 4.2 },
+      auditor: { good: 85, warn: 80 },
+      mystery: { good: 80, warn: 75 },
+      control: { good: 85, warn: 80 },
+      lateness: { good: 5, warn: 8 },
+      negReviews: { good: 6, warn: 10 },
+      fotShare: { good: [0.18, 0.22], warn: [0.22, 0.25] }
+    };
+
+    let editMode = false;
+
     function init() {
-      tg.ready();
-      tg.expand();
-      tg.MainButton.setText("💾 Сохранить отчет").hide();
-      
-      // Показываем Back button если нужно
-      if (tg.platform !== 'tdesktop') {
-        tg.BackButton.show();
-        tg.BackButton.onClick(() => {
-          // Логика возврата
-        });
+      if (tg) {
+        tg.ready();
+        tg.expand();
+        tg.MainButton.setText("💾 Сохранить данные").hide();
+        
+        if (tg.platform !== 'tdesktop') {
+          tg.BackButton.show();
+          tg.BackButton.onClick(() => {
+            tg.showConfirm("Закрыть приложение?", (ok) => {
+              if (ok) tg.close();
+            });
+          });
+        }
       }
+
+      $('#m').value = DATA.month;
+      const s = $('#b');
+      s.innerHTML = '';
+      DATA.branches.forEach((b, i) => {
+        const o = document.createElement('option');
+        o.value = i;
+        o.textContent = b.branch;
+        s.appendChild(o);
+      });
+      s.value = 0;
       
       render();
+      fillRating();
     }
 
     function curr() {
-      return DATA.branches[currentBranchIndex];
+      return DATA.branches[+$('#b').value || 0];
+    }
+
+    function qualityScore(b) {
+      const w = CFG.weights;
+      const auditor = (+b.auditor_score || 0) / 100;
+      const control = (+b.control_purchase_score || 0) / 100;
+      const mystery = (+b.mystery_score || 0) / 100;
+      const reviews = Math.max(0, Math.min(1, ((+b.reviews_rating_avg || 0) - 3.5) / 1.5));
+      const score = auditor * w.auditor + control * w.control + mystery * w.mystery + reviews * w.reviews;
+      return { score, details: { auditor, control, mystery, reviews } };
+    }
+
+    function rampCoef(plan, fact) {
+      const f = plan ? fact / plan : 0;
+      const r = CFG.ramp;
+      if (f < r.min) return 0;
+      if (f >= r.max) return 1;
+      const span = (r.max - r.min) || 0.05;
+      return (f - r.min) / span;
     }
 
     function compute(b) {
-      const base = (+b.revenue_fact || 0) * 0.03;
-      const plan = +b.revenue_plan || 0;
-      const fact = +b.revenue_fact || 0;
+      const base = (+b.revenue_fact || 0) * CFG.base_rate;
+      const ramp = rampCoef(+b.revenue_plan || 0, +b.revenue_fact || 0);
+      const q = qualityScore(b);
+      const payout = base * ramp * q.score;
+      const effRate = CFG.base_rate * ramp * q.score;
+      const fulfill = (+b.revenue_plan || 0) ? (+b.revenue_fact || 0) / (+b.revenue_plan || 0) : 0;
+      return { base, ramp, quality: q.score, effRate, payout, fulfill };
+    }
+
+    function statusClass(value, metric) {
+      switch(metric) {
+        case 'fulfillment':
+          if (value >= TH.fulfillment.good) return 'good';
+          if (value >= TH.fulfillment.warn) return 'warn';
+          return 'bad';
+        case 'delivery':
+          if (value >= TH.delivery.min && value <= TH.delivery.max) return 'good';
+          if (Math.abs(value - TH.delivery.min) <= 0.05 || Math.abs(value - TH.delivery.max) <= 0.05) return 'warn';
+          return 'bad';
+        case 'reviews':
+          if (value >= TH.reviews.good) return 'good';
+          if (value >= TH.reviews.warn) return 'warn';
+          return 'bad';
+        case 'auditor':
+          if (value >= TH.auditor.good) return 'good';
+          if (value >= TH.auditor.warn) return 'warn';
+          return 'bad';
+        case 'mystery':
+          if (value >= TH.mystery.good) return 'good';
+          if (value >= TH.mystery.warn) return 'warn';
+          return 'bad';
+        case 'control':
+          if (value >= TH.control.good) return 'good';
+          if (value >= TH.control.warn) return 'warn';
+          return 'bad';
+        case 'lateness':
+          if (value <= TH.lateness.good) return 'good';
+          if (value <= TH.lateness.warn) return 'warn';
+          return 'bad';
+        case 'negReviews':
+          if (value <= TH.negReviews.good) return 'good';
+          if (value <= TH.negReviews.warn) return 'warn';
+          return 'bad';
+        case 'fotShare':
+          if (value >= TH.fotShare.good[0] && value <= TH.fotShare.good[1]) return 'good';
+          if (value > TH.fotShare.good[1] && value <= TH.fotShare.warn[1]) return 'warn';
+          if (value < TH.fotShare.good[0] && value >= 0.15) return 'warn';
+          return 'bad';
+      }
+      return 'good';
+    }
+
+    function healthScore(b, fotShare) {
+      const plan = +b.revenue_plan || 0, fact = +b.revenue_fact || 0;
       const fulfill = plan ? fact / plan : 0;
+      const w = { fulfill: 0.28, reviews: 0.16, auditor: 0.12, mystery: 0.12, control: 0.10, fot: 0.12, late: 0.05, delivery: 0.05 };
       
-      // Упрощенный расчет рампы
-      let ramp = 0;
-      if (fulfill >= 1.0) ramp = 1.0;
-      else if (fulfill >= 0.95) ramp = (fulfill - 0.95) / 0.05;
-      
-      // Упрощенный Quality score
-      const quality = (
-        (b.auditor_score / 100) * 0.35 +
-        (b.control_purchase_score / 100) * 0.30 + 
-        (b.mystery_score / 100) * 0.20 +
-        Math.max(0, Math.min(1, (b.reviews_rating_avg - 3.5) / 1.5)) * 0.15
-      );
-      
-      const payout = base * ramp * quality;
-      return { base, ramp, quality, payout, fulfill };
+      function normBand(x, good, warn) { return x >= good ? 1 : (x >= warn ? 0.7 : 0.35); }
+      function normBandRev(x, good, warn) { return x <= good ? 1 : (x <= warn ? 0.7 : 0.35); }
+      function normCorridor(x, min, max) { 
+        if (x >= min && x <= max) return 1; 
+        if (Math.abs(x - min) <= 0.05 || Math.abs(x - max) <= 0.05) return 0.7; 
+        return 0.35; 
+      }
+
+      const nFulfill = clamp(fulfill / 1.0, 0, 1);
+      const nReviews = normBand(b.reviews_rating_avg || 0, TH.reviews.good, TH.reviews.warn);
+      const nAud = normBand(b.auditor_score || 0, TH.auditor.good, TH.auditor.warn);
+      const nMy = normBand(b.mystery_score || 0, TH.mystery.good, TH.mystery.warn);
+      const nControl = normBand(b.control_purchase_score || 0, TH.control.good, TH.control.warn);
+      const nFot = (fotShare >= TH.fotShare.good[0] && fotShare <= TH.fotShare.good[1]) ? 1 : (fotShare <= TH.fotShare.warn[1] ? 0.7 : 0.35);
+      const nLate = normBandRev(b.late_count || 0, TH.lateness.good, TH.lateness.warn);
+      const nDel = normCorridor(b.delivery_share || 0, TH.delivery.min, TH.delivery.max);
+
+      const total = (nFulfill * w.fulfill + nReviews * w.reviews + nAud * w.auditor + nMy * w.mystery + nControl * w.control + nFot * w.fot + nLate * w.late + nDel * w.delivery) * 100;
+      return total;
+    }
+
+    function badgeByClass(cls) {
+      if (cls === 'good') return ['healthy', 'ОК'];
+      if (cls === 'warn') return ['middle', 'Внимание'];
+      return ['risky', 'Проблема'];
     }
 
     function render() {
@@ -262,77 +546,264 @@
       const g = $('#kpi-grid');
       g.innerHTML = '';
 
+      const fotShare = (+b.fot_amount || 0) / ((+b.revenue_fact) || 1);
+      const neg = +b.reviews_count_neg || 0;
+
       const cards = [
-        { t: "Средний чек", v: fmt.format(b.avg_check) + ' ₽', s: `Гостей: ${fmt.format(b.guests)}` },
-        { t: "ФОТ", v: rub(b.fot_amount), s: `Доля: ${Math.round((b.fot_amount / b.revenue_fact) * 1000) / 10}%` },
-        { t: "Отзывы", v: b.reviews_rating_avg + " ★", s: `Негативных: ${b.reviews_count_neg}` },
-        { t: "Аудит", v: b.auditor_score + "/100", s: `Контроль: ${b.control_purchase_score}/100` },
-        { t: "Тайный гость", v: b.mystery_score + "/100", s: "" },
-        { t: "Доставка", v: pct(b.delivery_share), s: "" }
+        { t: "Выручка (Факт)", v: rub(b.revenue_fact), s: `План: ${rub(b.revenue_plan)}`, cls: statusClass((+b.revenue_fact || 0) / ((+b.revenue_plan) || 1), 'fulfillment') },
+        { t: "Средний чек", v: fmt.format(b.avg_check) + ' ₽', s: `Гостей: ${fmt.format(b.guests)}`, cls: null },
+        { t: "ФОТ", v: rub(b.fot_amount), s: `Доля ФОТ: ${(Math.round(fotShare * 1000) / 10)}%`, cls: statusClass(fotShare, 'fotShare') },
+        { t: "Отзывы", v: (b.reviews_rating_avg ?? '—') + " ★", s: "Негативных: " + neg, cls: mergeWorst(statusClass(b.reviews_rating_avg, 'reviews'), statusClass(neg, 'negReviews')) },
+        { t: "Аудит", v: (b.auditor_score ?? '—') + "/100", s: "Контроль: " + (b.control_purchase_score ?? '—') + "/100", cls: mergeWorst(statusClass(b.auditor_score, 'auditor'), statusClass(b.control_purchase_score, 'control')) },
+        { t: "Тайный гость", v: (b.mystery_score ?? '—') + "/100", s: "", cls: statusClass(b.mystery_score, 'mystery') },
       ];
 
       cards.forEach(c => {
         const el = document.createElement('div');
         el.className = 'card';
+        const pill = c.cls ? `<div class="pill ${c.cls}">${labelFor(c.cls)}</div>` : '';
         el.innerHTML = `
           <div class="title">${c.t}</div>
           <div class="knum">${c.v}</div>
-          <div class="mut">${c.s}</div>
+          <div class="mut">${c.s || ''}</div>
+          ${pill}
         `;
         g.appendChild(el);
       });
 
-      // Обновляем основные показатели
-      const r = compute(b);
+      // Основные показатели
       const plan = +b.revenue_plan || 0, fact = +b.revenue_fact || 0;
+      const fulfill = plan ? fact / plan : 0;
       
-      $('#kpi-fulfill-label').textContent = pct(r.fulfill);
+      $('#kpi-fulfill-label').textContent = pct(fulfill);
       $('#lbl-rev-fact').textContent = rub(fact);
       $('#lbl-rev-plan').textContent = rub(plan);
-      $('#bar-fulfill').style.width = Math.min(r.fulfill * 100, 150) + '%';
+      $('#bar-fulfill').style.width = clamp(fulfill * 100, 0, 150) + '%';
       
+      const gapEl = $('#pill-gap');
+      gapEl.textContent = (fact >= plan ? "+" + rub(fact - plan) : "−" + rub(Math.abs(fact - plan)));
+      gapEl.className = 'pill ' + (fact >= plan ? 'good' : (fulfill >= TH.fulfillment.warn ? 'warn' : 'bad'));
+
+      // Доставка
+      $('#kpi-delivery-label').textContent = pct(b.delivery_share);
+      const deliveryPill = $('#delivery-pill');
+      deliveryPill.textContent = labelFor(statusClass(b.delivery_share, 'delivery'));
+      deliveryPill.className = 'pill ' + statusClass(b.delivery_share, 'delivery');
+
+      // Health Score
+      const score = healthScore(b, fotShare);
+      $('#health-score').textContent = Math.round(score);
+      const [badgeCls, badgeText] = badgeByClass(score >= 80 ? 'good' : (score >= 65 ? 'warn' : 'bad'));
+      const hb = $('#health-badge');
+      hb.className = 'badge ' + badgeCls;
+      hb.textContent = badgeText;
+
+      // Notes
+      $('#txt-notes').value = (b.notes || '');
+
+      // Bonus
+      const r = compute(b);
       $('#bonus-amount').textContent = rub(r.payout);
-      const elig = $('#bonus-elig');
-      elig.textContent = r.ramp === 0 ? 'Недопуск' : (r.ramp < 1 ? 'Частичный допуск' : 'Полный допуск');
-      elig.className = 'pill ' + (r.ramp === 0 ? 'bad' : (r.ramp < 1 ? 'warn' : 'good'));
+      $('#bonus-info').textContent = `База: ${rub(r.base)} · Рампа: ${Math.round(r.ramp * 100)}% · Quality: ${Math.round(r.quality * 100)}%`;
+      const st = r.ramp === 0 ? 'bad' : (r.ramp < 1 ? 'warn' : 'good');
+      const tx = r.ramp === 0 ? 'Недопуск' : (r.ramp < 1 ? 'Частично' : 'Полный');
+      const el = $('#bonus-elig');
+      el.className = 'pill ' + st;
+      el.textContent = tx;
     }
 
-    function switchBranch() {
-      currentBranchIndex = (currentBranchIndex + 1) % DATA.branches.length;
-      render();
-      tg.showPopup({
-        title: "Филиал изменен",
-        message: `Теперь: ${curr().branch}`
+    function labelFor(cls) { return cls === 'good' ? 'ОК' : (cls === 'warn' ? 'Внимание' : 'Проблема'); }
+    function mergeWorst(a, b) { 
+      if (a === 'bad' || b === 'bad') return 'bad'; 
+      if (a === 'warn' || b === 'warn') return 'warn'; 
+      return 'good'; 
+    }
+
+    function fillRating() {
+      const tbody = $('#tbl-rating tbody');
+      tbody.innerHTML = '';
+      
+      const items = DATA.branches.map(b => {
+        const plan = +b.revenue_plan || 0, fact = +b.revenue_fact || 0;
+        const fulfill = plan ? fact / plan : 0;
+        return { name: b.branch, plan, fact, fulfill };
+      }).sort((a, b) => b.fulfill - a.fulfill);
+
+      items.forEach((it, idx) => {
+        const tr = document.createElement('tr');
+        const medal = idx === 0 ? '🥇' : (idx === 1 ? '🥈' : (idx === 2 ? '🥉' : ''));
+        tr.innerHTML = `
+          <td>${medal} ${idx + 1}</td>
+          <td>${it.name}</td>
+          <td>${pct(it.fulfill)}</td>
+        `;
+        tbody.appendChild(tr);
       });
+    }
+
+    function toggleEdit() {
+      editMode = !editMode;
+      $('#edit').textContent = editMode ? '💾 Сохранить' : '✏️ Редактировать';
+      
+      const b = curr();
+      const grid = $('#kpi-grid');
+      
+      if (editMode) {
+        grid.innerHTML = '';
+        
+        const fields = [
+          ['revenue_plan', 'План выручки, ₽', 'number'],
+          ['revenue_fact', 'Факт выручки, ₽', 'number'],
+          ['avg_check', 'Средний чек, ₽', 'number'],
+          ['guests', 'Гостей, чел', 'number'],
+          ['delivery_share', 'Доля доставки (0-1)', 'number'],
+          ['fot_amount', 'ФОТ, ₽', 'number'],
+          ['reviews_rating_avg', 'Отзывы (1-5)', 'number'],
+          ['reviews_count_neg', 'Негативных отзывов', 'number'],
+          ['late_count', 'Опоздания', 'number'],
+          ['auditor_score', 'Аудит (0-100)', 'number'],
+          ['control_purchase_score', 'Контроль (0-100)', 'number'],
+          ['mystery_score', 'Тайный гость (0-100)', 'number']
+        ];
+
+        fields.forEach(([key, label, type]) => {
+          const val = b[key] ?? '';
+          const card = document.createElement('div');
+          card.className = 'card';
+          card.innerHTML = `
+            <div class="title">${label}</div>
+            <input type="${type}" data-key="${key}" value="${val}" 
+                   style="width: 100%; margin-top: 8px;" />
+          `;
+          grid.appendChild(card);
+        });
+        
+        if (tg) {
+          tg.MainButton.show();
+          tg.MainButton.onClick(saveEditData);
+        }
+      } else {
+        saveEditData();
+      }
+    }
+
+    function saveEditData() {
+      $$('#kpi-grid input').forEach(inp => {
+        const k = inp.dataset.key;
+        let v = inp.value;
+        if (k === 'delivery_share' || k === 'reviews_rating_avg') {
+          curr()[k] = parseFloat(v) || 0;
+        } else {
+          curr()[k] = +v || 0;
+        }
+      });
+      
+      if (tg) {
+        tg.MainButton.hide();
+        tg.showPopup({
+          title: "Сохранено",
+          message: "Данные успешно обновлены",
+          buttons: [{ type: "ok" }]
+        });
+      }
+      
+      render();
+      fillRating();
+    }
+
+    function copyChecklist() {
+      const txt = $('#txt-notes').value.trim();
+      if (!txt) { 
+        showAlert('Нет текста заметок.');
+        return; 
+      }
+      
+      const lines = txt.split(/\n+/).map(s => s.replace(/^[-—•\s]+/, '').trim()).filter(Boolean);
+      const checklist = lines.map(s => `□ ${s}`).join('\n');
+      
+      if (tg) {
+        tg.sendData(JSON.stringify({ type: 'checklist', data: checklist }));
+        tg.showPopup({
+          title: "Скопировано",
+          message: "Чек-лист готов к использованию",
+          buttons: [{ type: "ok" }]
+        });
+      } else {
+        navigator.clipboard.writeText(checklist);
+        showAlert('Скопировано в буфер:\n\n' + checklist);
+      }
     }
 
     function exportData() {
-      const b = curr();
-      const data = `
-Филиал: ${b.branch}
-Выручка: ${rub(b.revenue_fact)}
-План: ${rub(b.revenue_plan)} 
-Выполнение: ${pct(b.revenue_fact / b.revenue_plan)}
-Премия: ${$('#bonus-amount').textContent}
+      const dataStr = JSON.stringify(DATA, null, 2);
+      if (tg) {
+        tg.sendData(JSON.stringify({ type: 'export', data: DATA }));
+        tg.showPopup({
+          title: "Экспорт",
+          message: "Данные отправлены в Telegram",
+          buttons: [{ type: "ok" }]
+        });
+      } else {
+        const blob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'chifan-data.json';
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+    }
+
+    function showCompare() {
+      const a = DATA.branches.find(x => x.branch === 'Тихая') || DATA.branches[0];
+      const b = DATA.branches.find(x => x.branch === 'Тобольская') || DATA.branches[1] || DATA.branches[0];
+      
+      const comparison = `
+🏪 Сравнение филиалов:
+
+Тихая vs Тобольская
+
+📊 Выручка: ${rub(a.revenue_fact)} vs ${rub(b.revenue_fact)}
+🎯 Выполнение: ${pct(a.revenue_fact/a.revenue_plan)} vs ${pct(b.revenue_fact/b.revenue_plan)}
+💰 Премия: ${rub(compute(a).payout)} vs ${rub(compute(b).payout)}
+⭐ Отзывы: ${a.reviews_rating_avg}★ vs ${b.reviews_rating_avg}★
       `.trim();
       
-      tg.showPopup({
-        title: "Данные для экспорта",
-        message: data,
-        buttons: [{ type: "ok" }]
-      });
+      showAlert(comparison, 'Сравнение филиалов');
     }
 
-    function showHelp() {
-      tg.showPopup({
-        title: "Помощь",
-        message: "Это демо-версия аналитики Чи-Фань для Telegram. Используйте кнопки для навигации.",
-        buttons: [{ type: "ok" }]
-      });
+    function showAlert(message, title = 'Информация') {
+      if (tg) {
+        tg.showPopup({
+          title: title,
+          message: message,
+          buttons: [{ type: "ok" }]
+        });
+      } else {
+        alert(title + '\n\n' + message);
+      }
     }
 
-    // Вспомогательные функции
-    const $ = s => document.querySelector(s);
+    // Обработчики событий
+    $('#b').addEventListener('change', render);
+    $('#m').addEventListener('change', e => {
+      DATA.month = e.target.value;
+      DATA.branches.forEach(x => x.month = DATA.month);
+      render();
+      fillRating();
+    });
+    
+    $('#edit').addEventListener('click', toggleEdit);
+    $('#btn-compare').addEventListener('click', showCompare);
+    $('#export').addEventListener('click', exportData);
+    $('#btn-copy').addEventListener('click', copyChecklist);
+    $('#reset').addEventListener('click', () => {
+      if (confirm('Сбросить все данные к демо-версии?')) {
+        DATA = JSON.parse(JSON.stringify(START));
+        init();
+        showAlert('Данные сброшены к демо-версии');
+      }
+    });
 
     // Запуск приложения
     init();
