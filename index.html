@@ -222,6 +222,10 @@
       margin: 12px 0;
     }
     
+    .file-input {
+      display: none;
+    }
+    
     /* Адаптация для мобильных устройств */
     @media (max-width: 360px) {
       .grid.kpi {
@@ -258,9 +262,12 @@
   <div class="action-buttons">
     <button class="btn-primary" id="edit">✏️ Редактировать</button>
     <button id="btn-compare">📊 Сравнить</button>
-    <button id="export">📤 Экспорт</button>
+    <button id="export">📤 Экспорт JSON</button>
+    <button class="btn-primary" id="import">📥 Импорт JSON</button>
     <button class="btn-danger" id="reset">🔄 Сброс</button>
   </div>
+
+  <input type="file" id="fileInput" class="file-input" accept=".json" />
 
   <div class="grid kpi" id="kpi-grid"></div>
 
@@ -341,42 +348,43 @@
     // Инициализация Telegram WebApp
     const tg = window.Telegram?.WebApp;
 
+    // Базовые данные
     let DATA = {
       "month": "2025-09",
       "branches": [
         {
           "branch": "Тихая",
           "month": "2025-09",
-          "revenue_plan": 3400000,
-          "revenue_fact": 3550000,
-          "avg_check": 610,
-          "guests": 5400,
-          "delivery_share": 0.41,
-          "fot_amount": 680000,
-          "reviews_rating_avg": 4.4,
-          "reviews_count_neg": 5,
-          "late_count": 4,
-          "auditor_score": 88,
-          "mystery_score": 85,
-          "control_purchase_score": 83,
-          "notes": "Рост гостей за счёт акции по лапше. Нужно усилить контроль качества в выходные."
+          "revenue_plan": 2100000,
+          "revenue_fact": 2100000,
+          "avg_check": 0,
+          "guests": 0,
+          "delivery_share": 0.43,
+          "fot_amount": 350000,
+          "reviews_rating_avg": 4.37,
+          "reviews_count_neg": 13,
+          "late_count": 0,
+          "auditor_score": 70,
+          "mystery_score": 100,
+          "control_purchase_score": 85,
+          "notes": ""
         },
         {
           "branch": "Тобольская",
           "month": "2025-09",
           "revenue_plan": 3500000,
-          "revenue_fact": 3290000,
-          "avg_check": 590,
-          "guests": 5020,
-          "delivery_share": 0.44,
-          "fot_amount": 670000,
-          "reviews_rating_avg": 4.1,
-          "reviews_count_neg": 12,
-          "late_count": 9,
-          "auditor_score": 79,
-          "mystery_score": 74,
-          "control_purchase_score": 76,
-          "notes": "Пересол на «Зелёной лапше». Высокий уровень опозданий персонала."
+          "revenue_fact": 3500000,
+          "avg_check": 0,
+          "guests": 0,
+          "delivery_share": 0.43,
+          "fot_amount": 750000,
+          "reviews_rating_avg": 4.51,
+          "reviews_count_neg": 10,
+          "late_count": 0,
+          "auditor_score": 70,
+          "mystery_score": 100,
+          "control_purchase_score": 95,
+          "notes": ""
         }
       ]
     };
@@ -419,6 +427,13 @@
       }
 
       $('#m').value = DATA.month;
+      updateBranchSelect();
+      
+      render();
+      fillRating();
+    }
+
+    function updateBranchSelect() {
       const s = $('#b');
       s.innerHTML = '';
       DATA.branches.forEach((b, i) => {
@@ -428,9 +443,6 @@
         s.appendChild(o);
       });
       s.value = 0;
-      
-      render();
-      fillRating();
     }
 
     function curr() {
@@ -751,7 +763,48 @@
         a.download = 'chifan-data.json';
         a.click();
         URL.revokeObjectURL(url);
+        showAlert('JSON файл скачан');
       }
+    }
+
+    function importData() {
+      $('#fileInput').click();
+    }
+
+    function handleFileImport(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const importedData = JSON.parse(e.target.result);
+          
+          // Валидация структуры данных
+          if (!importedData.branches || !Array.isArray(importedData.branches)) {
+            throw new Error('Неверный формат JSON: отсутствует branches');
+          }
+          
+          if (importedData.branches.length === 0) {
+            throw new Error('Нет данных о филиалах');
+          }
+
+          DATA = importedData;
+          $('#m').value = DATA.month;
+          updateBranchSelect();
+          render();
+          fillRating();
+          
+          showAlert(`Успешно импортировано ${DATA.branches.length} филиалов`, 'Импорт данных');
+          
+        } catch (error) {
+          showAlert('Ошибка при импорте JSON: ' + error.message, 'Ошибка');
+        }
+      };
+      reader.readAsText(file);
+      
+      // Сброс input для возможности повторного выбора того же файла
+      event.target.value = '';
     }
 
     function showCompare() {
@@ -767,6 +820,7 @@
 🎯 Выполнение: ${pct(a.revenue_fact/a.revenue_plan)} vs ${pct(b.revenue_fact/b.revenue_plan)}
 💰 Премия: ${rub(compute(a).payout)} vs ${rub(compute(b).payout)}
 ⭐ Отзывы: ${a.reviews_rating_avg}★ vs ${b.reviews_rating_avg}★
+📦 Доставка: ${pct(a.delivery_share)} vs ${pct(b.delivery_share)}
       `.trim();
       
       showAlert(comparison, 'Сравнение филиалов');
@@ -796,7 +850,10 @@
     $('#edit').addEventListener('click', toggleEdit);
     $('#btn-compare').addEventListener('click', showCompare);
     $('#export').addEventListener('click', exportData);
+    $('#import').addEventListener('click', importData);
     $('#btn-copy').addEventListener('click', copyChecklist);
+    $('#fileInput').addEventListener('change', handleFileImport);
+    
     $('#reset').addEventListener('click', () => {
       if (confirm('Сбросить все данные к демо-версии?')) {
         DATA = JSON.parse(JSON.stringify(START));
