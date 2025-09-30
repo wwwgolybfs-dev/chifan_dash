@@ -226,6 +226,19 @@
       display: none;
     }
     
+    .save-button {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 90%;
+      max-width: 300px;
+      z-index: 1000;
+      padding: 14px;
+      font-size: 16px;
+      font-weight: 600;
+    }
+    
     /* Адаптация для мобильных устройств */
     @media (max-width: 360px) {
       .grid.kpi {
@@ -268,6 +281,9 @@
   </div>
 
   <input type="file" id="fileInput" class="file-input" accept=".json" />
+
+  <!-- Кнопка сохранения (показывается только в режиме редактирования вне Telegram) -->
+  <button class="btn-primary save-button" id="saveButton" style="display: none;">💾 Сохранить изменения</button>
 
   <div class="grid kpi" id="kpi-grid"></div>
 
@@ -347,6 +363,7 @@
 
     // Инициализация Telegram WebApp
     const tg = window.Telegram?.WebApp;
+    const isTelegram = !!tg;
 
     // Базовые данные
     let DATA = {
@@ -411,7 +428,7 @@
     let editMode = false;
 
     function init() {
-      if (tg) {
+      if (isTelegram) {
         tg.ready();
         tg.expand();
         tg.MainButton.setText("💾 Сохранить данные").hide();
@@ -655,7 +672,7 @@
 
     function toggleEdit() {
       editMode = !editMode;
-      $('#edit').textContent = editMode ? '💾 Сохранить' : '✏️ Редактировать';
+      $('#edit').textContent = editMode ? '❌ Отменить' : '✏️ Редактировать';
       
       const b = curr();
       const grid = $('#kpi-grid');
@@ -690,12 +707,22 @@
           grid.appendChild(card);
         });
         
-        if (tg) {
+        if (isTelegram) {
+          // В Telegram используем Main Button
           tg.MainButton.show();
           tg.MainButton.onClick(saveEditData);
+        } else {
+          // В веб-версии показываем нашу кнопку
+          $('#saveButton').style.display = 'block';
         }
       } else {
-        saveEditData();
+        // Выход из режима редактирования без сохранения
+        if (isTelegram) {
+          tg.MainButton.hide();
+        } else {
+          $('#saveButton').style.display = 'none';
+        }
+        render();
       }
     }
 
@@ -710,13 +737,20 @@
         }
       });
       
-      if (tg) {
+      // Выход из режима редактирования
+      editMode = false;
+      $('#edit').textContent = '✏️ Редактировать';
+      
+      if (isTelegram) {
         tg.MainButton.hide();
         tg.showPopup({
           title: "Сохранено",
           message: "Данные успешно обновлены",
           buttons: [{ type: "ok" }]
         });
+      } else {
+        $('#saveButton').style.display = 'none';
+        showAlert('Данные успешно сохранены', 'Сохранено');
       }
       
       render();
@@ -733,7 +767,7 @@
       const lines = txt.split(/\n+/).map(s => s.replace(/^[-—•\s]+/, '').trim()).filter(Boolean);
       const checklist = lines.map(s => `□ ${s}`).join('\n');
       
-      if (tg) {
+      if (isTelegram) {
         tg.sendData(JSON.stringify({ type: 'checklist', data: checklist }));
         tg.showPopup({
           title: "Скопировано",
@@ -741,14 +775,17 @@
           buttons: [{ type: "ok" }]
         });
       } else {
-        navigator.clipboard.writeText(checklist);
-        showAlert('Скопировано в буфер:\n\n' + checklist);
+        navigator.clipboard.writeText(checklist).then(() => {
+          showAlert('Чек-лист скопирован в буфер обмена');
+        }).catch(() => {
+          showAlert('Не удалось скопировать в буфер обмена');
+        });
       }
     }
 
     function exportData() {
       const dataStr = JSON.stringify(DATA, null, 2);
-      if (tg) {
+      if (isTelegram) {
         tg.sendData(JSON.stringify({ type: 'export', data: DATA }));
         tg.showPopup({
           title: "Экспорт",
@@ -827,7 +864,7 @@
     }
 
     function showAlert(message, title = 'Информация') {
-      if (tg) {
+      if (isTelegram) {
         tg.showPopup({
           title: title,
           message: message,
@@ -853,6 +890,7 @@
     $('#import').addEventListener('click', importData);
     $('#btn-copy').addEventListener('click', copyChecklist);
     $('#fileInput').addEventListener('change', handleFileImport);
+    $('#saveButton').addEventListener('click', saveEditData);
     
     $('#reset').addEventListener('click', () => {
       if (confirm('Сбросить все данные к демо-версии?')) {
