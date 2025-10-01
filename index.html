@@ -617,7 +617,7 @@
         { t: "Средний чек", v: fmt.format(b.avg_check) + ' ₽', s: `Гостей: ${fmt.format(b.guests)}`, cls: null },
         { t: "ФОТ", v: rub(b.fot_amount), s: `Доля ФОТ: ${(Math.round(fotShare * 1000) / 10)}%`, cls: statusClass(fotShare, 'fotShare') },
         { t: "Отзывы", v: (b.reviews_rating_avg ?? '—') + " ★", s: "Негативных: " + neg, cls: mergeWorst(statusClass(b.reviews_rating_avg, 'reviews'), statusClass(neg, 'negReviews')) },
-        { t: "Аудит", v: (b.auditor_score ?? '—') + "/100", s: "Контроль: " + (b.control_purchase_score ?? '—') + "/100", cls: mergeWorst(statusClass(b.auditor_score, 'auditor'), statusClass(b.control_purchase_score, 'control')) },
+        { t: "Аудит", v: (b.auditor_score ?? '—') + "/100", s: "Закупка: " + (b.control_purchase_score ?? '—') + "/100", cls: mergeWorst(statusClass(b.auditor_score, 'auditor'), statusClass(b.control_purchase_score, 'control')) },
         { t: "Тайный гость", v: (b.mystery_score ?? '—') + "/100", s: "", cls: statusClass(b.mystery_score, 'mystery') },
       ];
 
@@ -748,7 +748,7 @@
         ['reviews_count_neg', 'Негативных отзывов', 'number'],
         ['late_count', 'Опоздания', 'number'],
         ['auditor_score', 'Аудит (0-100)', 'number'],
-        ['control_purchase_score', 'Контроль (0-100)', 'number'],
+        ['control_purchase_score', 'Закупка (0-100)', 'number'],
         ['mystery_score', 'Тайный гость (0-100)', 'number']
       ];
 
@@ -974,4 +974,5 @@
   </script>
 </body>
 </html>
+
 
