@@ -36,7 +36,7 @@
       background: var(--bg);
       color: var(--text);
       padding: 12px;
-      padding-bottom: 70px;
+      padding-bottom: 20px;
     }
     
     .header {
@@ -226,19 +226,6 @@
       display: none;
     }
     
-    .save-button {
-      position: fixed;
-      bottom: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 90%;
-      max-width: 300px;
-      z-index: 1000;
-      padding: 14px;
-      font-size: 16px;
-      font-weight: 600;
-    }
-    
     /* Адаптация для мобильных устройств */
     @media (max-width: 360px) {
       .grid.kpi {
@@ -281,9 +268,6 @@
   </div>
 
   <input type="file" id="fileInput" class="file-input" accept=".json" />
-
-  <!-- Кнопка сохранения (показывается только в режиме редактирования вне Telegram) -->
-  <button class="btn-primary save-button" id="saveButton" style="display: none;">💾 Сохранить изменения</button>
 
   <div class="grid kpi" id="kpi-grid"></div>
 
@@ -672,58 +656,63 @@
 
     function toggleEdit() {
       editMode = !editMode;
-      $('#edit').textContent = editMode ? '❌ Отменить' : '✏️ Редактировать';
-      
-      const b = curr();
-      const grid = $('#kpi-grid');
       
       if (editMode) {
-        grid.innerHTML = '';
-        
-        const fields = [
-          ['revenue_plan', 'План выручки, ₽', 'number'],
-          ['revenue_fact', 'Факт выручки, ₽', 'number'],
-          ['avg_check', 'Средний чек, ₽', 'number'],
-          ['guests', 'Гостей, чел', 'number'],
-          ['delivery_share', 'Доля доставки (0-1)', 'number'],
-          ['fot_amount', 'ФОТ, ₽', 'number'],
-          ['reviews_rating_avg', 'Отзывы (1-5)', 'number'],
-          ['reviews_count_neg', 'Негативных отзывов', 'number'],
-          ['late_count', 'Опоздания', 'number'],
-          ['auditor_score', 'Аудит (0-100)', 'number'],
-          ['control_purchase_score', 'Контроль (0-100)', 'number'],
-          ['mystery_score', 'Тайный гость (0-100)', 'number']
-        ];
-
-        fields.forEach(([key, label, type]) => {
-          const val = b[key] ?? '';
-          const card = document.createElement('div');
-          card.className = 'card';
-          card.innerHTML = `
-            <div class="title">${label}</div>
-            <input type="${type}" data-key="${key}" value="${val}" 
-                   style="width: 100%; margin-top: 8px;" />
-          `;
-          grid.appendChild(card);
-        });
+        // Входим в режим редактирования
+        $('#edit').textContent = '💾 Сохранить';
+        showEditForm();
         
         if (isTelegram) {
-          // В Telegram используем Main Button
+          // В Telegram используем Main Button для сохранения
+          tg.MainButton.setText("💾 Сохранить данные");
           tg.MainButton.show();
-          tg.MainButton.onClick(saveEditData);
-        } else {
-          // В веб-версии показываем нашу кнопку
-          $('#saveButton').style.display = 'block';
+          tg.MainButton.onClick(saveAndExitEdit);
         }
       } else {
-        // Выход из режима редактирования без сохранения
+        // Выход из режима редактирования с сохранением (для веб-версии)
+        $('#edit').textContent = '✏️ Редактировать';
+        saveEditData();
+        
         if (isTelegram) {
           tg.MainButton.hide();
-        } else {
-          $('#saveButton').style.display = 'none';
         }
+        
         render();
+        fillRating();
       }
+    }
+
+    function showEditForm() {
+      const b = curr();
+      const grid = $('#kpi-grid');
+      grid.innerHTML = '';
+      
+      const fields = [
+        ['revenue_plan', 'План выручки, ₽', 'number'],
+        ['revenue_fact', 'Факт выручки, ₽', 'number'],
+        ['avg_check', 'Средний чек, ₽', 'number'],
+        ['guests', 'Гостей, чел', 'number'],
+        ['delivery_share', 'Доля доставки (0-1)', 'number'],
+        ['fot_amount', 'ФОТ, ₽', 'number'],
+        ['reviews_rating_avg', 'Отзывы (1-5)', 'number'],
+        ['reviews_count_neg', 'Негативных отзывов', 'number'],
+        ['late_count', 'Опоздания', 'number'],
+        ['auditor_score', 'Аудит (0-100)', 'number'],
+        ['control_purchase_score', 'Контроль (0-100)', 'number'],
+        ['mystery_score', 'Тайный гость (0-100)', 'number']
+      ];
+
+      fields.forEach(([key, label, type]) => {
+        const val = b[key] ?? '';
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <div class="title">${label}</div>
+          <input type="${type}" data-key="${key}" value="${val}" 
+                 style="width: 100%; margin-top: 8px;" />
+        `;
+        grid.appendChild(card);
+      });
     }
 
     function saveEditData() {
@@ -736,22 +725,19 @@
           curr()[k] = +v || 0;
         }
       });
-      
-      // Выход из режима редактирования
+    }
+
+    function saveAndExitEdit() {
+      saveEditData();
       editMode = false;
       $('#edit').textContent = '✏️ Редактировать';
       
-      if (isTelegram) {
-        tg.MainButton.hide();
-        tg.showPopup({
-          title: "Сохранено",
-          message: "Данные успешно обновлены",
-          buttons: [{ type: "ok" }]
-        });
-      } else {
-        $('#saveButton').style.display = 'none';
-        showAlert('Данные успешно сохранены', 'Сохранено');
-      }
+      tg.MainButton.hide();
+      tg.showPopup({
+        title: "Сохранено",
+        message: "Данные успешно обновлены",
+        buttons: [{ type: "ok" }]
+      });
       
       render();
       fillRating();
@@ -890,7 +876,6 @@
     $('#import').addEventListener('click', importData);
     $('#btn-copy').addEventListener('click', copyChecklist);
     $('#fileInput').addEventListener('change', handleFileImport);
-    $('#saveButton').addEventListener('click', saveEditData);
     
     $('#reset').addEventListener('click', () => {
       if (confirm('Сбросить все данные к демо-версии?')) {
