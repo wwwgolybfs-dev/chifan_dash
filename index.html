@@ -1,10 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
   <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no"/>
-  <title>Чи‑Фань · Итоги + Премия</title>
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Чи‑Фань · Итоги + Премия (3% × Выручка × ramp × Quality)</title>
   <style>
     :root {
       --bg: #0b0c10;
@@ -13,7 +13,7 @@
       --mut: #a7b0bf;
       --border: #1f2330;
       --accent: #60a5fa;
-      --good: #22c8c5; /* Изменен зеленый на бирюзовый */
+      --good: #22c55e;
       --bad: #ef4444;
       --warn: #f59e0b;
       --btn-bg: #0e1726;
@@ -26,9 +26,8 @@
       --btn-danger-border: #ef4444;
       --input-bg: #0f1219;
       --input-text: #e8edf5;
-      transition: background-color 0.3s ease, color 0.3s ease;
+      transition: background-color 1.1s ease, color 1.1s ease;
     }
-
     :root.theme-light {
       --bg: #ffffff;
       --card: #f9fafb;
@@ -36,9 +35,9 @@
       --mut: #6b7280;
       --border: #e5e7eb;
       --accent: #3b82f6;
-      --good: #0d9488; /* Бирюзовый для светлой темы */
-      --bad: #dc2626;
-      --warn: #d97706;
+      --good: #22c55e;
+      --bad: #ef4444;
+      --warn: #f59e0b;
       --btn-bg: #f3f4f6;
       --btn-border: #d1d5db;
       --btn-text: #111827;
@@ -46,46 +45,41 @@
       --btn-primary-bg: #dbeafe;
       --btn-primary-border: #3b82f6;
       --btn-danger-bg: #fee2e2;
-      --btn-danger-border: #dc2626;
+      --btn-danger-border: #ef4444;
       --input-bg: #f9fafb;
       --input-text: #111827;
+      transition: background-color 1.1s ease, color 1.1s ease;
     }
 
     * { box-sizing: border-box; }
     body {
       margin: 0;
-      font: 14px/1.45 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font: 16px/1.45 system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial;
       background: var(--bg);
       color: var(--text);
-      padding: 12px;
-      padding-bottom: 20px;
-      transition: background-color 0.3s ease, color 0.3s ease;
+      transition: background-color 1.1s ease, color 1.1s ease;
     }
-    
-    .header {
-      text-align: center;
-      margin-bottom: 16px;
-      padding: 16px;
-      background: var(--card);
-      border-radius: 16px;
-      border: 1px solid var(--border);
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      backdrop-filter: saturate(1.2) blur(10px);
+      background: linear-gradient(180deg, rgba(11,12,16,.9), rgba(11,12,16,.6));
+      border-bottom: 1px solid var(--border);
     }
-    
-    h1 { font-size: 18px; margin: 0 0 4px; }
-    .sub { color: var(--mut); font-size: 12px; }
-    
-    .controls {
+    .wrap {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 18px 20px;
+    }
+    .row {
       display: flex;
-      gap: 8px;
-      margin-bottom: 16px;
+      gap: 12px;
       flex-wrap: wrap;
+      align-items: center;
     }
-    
-    .control-group {
-      flex: 1;
-      min-width: 120px;
-    }
-    
+    h1 { font-size: 22px; margin: 0 0 6px; }
+    .sub { color: var(--mut); font-size: 14px; }
     select, input, button, textarea {
       background: var(--input-bg);
       color: var(--input-text);
@@ -93,11 +87,8 @@
       border-radius: 10px;
       padding: 10px 12px;
       outline: none;
-      width: 100%;
-      font-size: 14px;
-      transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+      transition: background 0.2s, border-color 0.2s, color 0.2s;
     }
-    
     button {
       cursor: pointer;
       border: 1px solid var(--btn-border);
@@ -106,231 +97,256 @@
       border-radius: 12px;
       transition: .2s ease;
     }
-    
     button:hover {
       transform: translateY(-1px);
       background: var(--btn-hover);
     }
-    
     .btn-primary {
       border-color: var(--btn-primary-border);
       background: var(--btn-primary-bg);
+      color: var(--btn-text);
     }
-    
+    .btn-primary:hover {
+      background: color-mix(in srgb, var(--btn-primary-bg), black 5%);
+    }
     .btn-danger {
       border-color: var(--btn-danger-border);
       background: var(--btn-danger-bg);
+      color: var(--btn-text);
     }
-    
+    .btn-danger:hover {
+      background: color-mix(in srgb, var(--btn-danger-bg), black 5%);
+    }
+    .grid {
+      display: grid;
+      gap: 14px;
+    }
+    .grid.kpi {
+      grid-template-columns: repeat(4, minmax(0,1fr));
+    }
+    .grid.two {
+      grid-template-columns: repeat(2, minmax(0,1fr));
+    }
+    .grid.three {
+      grid-template-columns: repeat(3, minmax(0,1fr));
+    }
+    @media (max-width:1100px) {
+      .grid.kpi { grid-template-columns: repeat(2,1fr); }
+      .grid.three { grid-template-columns: repeat(2,1fr); }
+    }
+    @media (max-width:620px) {
+      .grid.kpi, .grid.two, .grid.three { grid-template-columns: 1fr; }
+    }
+    .card {
+      background: linear-gradient(180deg, var(--card), color-mix(in srgb, var(--card), transparent 15%));
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 8px 20px rgba(0,0,0,.25);
+      transition: background 0.3s, border-color 0.3s;
+    }
+    .title { font-size: 13px; color: var(--mut); }
+    .knum { font-weight: 700; font-size: 28px; margin-top: 6px; letter-spacing: .2px; }
+    .mut { color: var(--mut); font-size: 12px; }
+    .mono { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 12px; }
+    .spacer { height: 8px; }
+    .split { display: flex; gap: 16px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+    .bar {
+      height: 8px;
+      background: #10161f;
+      border: 1px solid var(--border);
+      border-radius: 99px;
+      overflow: hidden;
+    }
+    .bar > i {
+      display: block;
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), #60a5fa);
+    }
+    .pill {
+      display: inline-flex;
+      gap: 8px;
+      align-items: center;
+      font-size: 12px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+    .pill.good { border-color: #1f5132; color: #34d399; background: #0d1f14; }
+    .pill.warn { border-color: #5a410e; color: #fbbf24; background: #1d1507; }
+    .pill.bad { border-color: #512228; color: #f87171; background: #1a0f10; }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      border: 1px solid var(--border);
+    }
+    .badge.healthy { background: #0d1f14; color: #34d399; border-color: #1f5132; }
+    .badge.middle { background: #1d1507; color: #fbbf24; border-color: #5a410e; }
+    .badge.risky { background: #1a0f10; color: #f87171; border-color: #512228; }
+    .ring {
+      width: 74px;
+      height: 74px;
+    }
+    .legend {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      font-size: 12px;
+      color: var(--mut);
+    }
+    .legend .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 99px;
+      display: inline-block;
+      margin-right: 6px;
+    }
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 14px;
+    }
+    .table th, .table td {
+      padding: 10px 8px;
+      border-bottom: 1px dashed var(--border);
+      text-align: left;
+    }
     .theme-toggle {
       background: var(--card);
       border: 1px solid var(--border);
       border-radius: 50%;
-      width: 44px;
-      height: 44px;
+      width: 36px;
+      height: 36px;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
       color: var(--text);
-      font-size: 18px;
+      font-size: 16px;
+      margin-left: 12px;
       transition: all 0.3s ease;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
-    
     .theme-toggle:hover {
       transform: scale(1.05);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.15);
     }
-    
-    .grid {
-      display: grid;
-      gap: 12px;
-      margin-bottom: 16px;
-    }
-    
-    .grid.kpi {
-      grid-template-columns: repeat(2, 1fr);
-    }
-    
-    .grid.two {
-      grid-template-columns: 1fr;
-    }
-    
-    .grid.three {
-      grid-template-columns: 1fr;
-    }
-    
-    @media (min-width: 480px) {
-      .grid.two {
-        grid-template-columns: repeat(2, 1fr);
+
+    /* --- Печать: сохраняем текущую тему --- */
+    @media print {
+      body {
+        background: var(--bg) !important;
+        color: var(--text) !important;
       }
-    }
-    
-    .card {
-      background: var(--card);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      padding: 16px;
-      position: relative;
-      transition: background-color 0.3s ease, border-color 0.3s ease;
-    }
-    
-    .title { font-size: 12px; color: var(--mut); margin-bottom: 6px; }
-    .knum { font-weight: 700; font-size: 22px; margin: 4px 0; }
-    .mut { color: var(--mut); font-size: 11px; }
-    .mono { font-family: 'Courier New', monospace; font-size: 11px; }
-    
-    .pill {
-      display: inline-flex;
-      align-items: center;
-      font-size: 11px;
-      padding: 4px 8px;
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
-    }
-    
-    .pill.good { border-color: #115e59; color: #2dd4bf; background: #042f2e; }
-    .pill.warn { border-color: #5a410e; color: #fbbf24; background: #1d1507; }
-    .pill.bad { border-color: #512228; color: #f87171; background: #1a0f10; }
-    
-    .badge {
-      display: inline-flex;
-      align-items: center;
-      padding: 6px 10px;
-      border-radius: 999px;
-      font-size: 11px;
-      border: 1px solid var(--border);
-      transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
-    }
-    
-    .badge.healthy { background: #042f2e; color: #2dd4bf; border-color: #115e59; }
-    .badge.middle { background: #1d1507; color: #fbbf24; border-color: #5a410e; }
-    .badge.risky { background: #1a0f10; color: #f87171; border-color: #512228; }
-    
-    .bar {
-      height: 6px;
-      background: #10161f;
-      border-radius: 99px;
-      overflow: hidden;
-      margin: 8px 0;
-    }
-    
-    .bar > i {
-      display: block;
-      height: 100%;
-      background: linear-gradient(90deg, var(--accent), #60a5fa);
-      border-radius: 99px;
-    }
-    
-    .split { 
-      display: flex; 
-      gap: 12px; 
-      align-items: center; 
-      justify-content: space-between; 
-      flex-wrap: wrap; 
-    }
-    
-    .table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 12px;
-    }
-    
-    .table th, .table td {
-      padding: 8px 6px;
-      border-bottom: 1px dashed var(--border);
-      text-align: left;
-    }
-    
-    .section-title {
-      font-size: 16px;
-      font-weight: 600;
-      margin: 20px 0 12px 0;
-      color: var(--text);
-    }
-    
-    .tg-button {
-      width: 100%;
-      padding: 12px;
-      background: var(--btn-primary-bg);
-      color: var(--btn-text);
-      border: 1px solid var(--btn-primary-border);
-      border-radius: 12px;
-      font-size: 14px;
-      margin: 6px 0;
-      cursor: pointer;
-    }
-    
-    .action-buttons {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 8px;
-      margin: 12px 0;
-    }
-    
-    .file-input {
-      display: none;
-    }
-    
-    /* Адаптация для мобильных устройств */
-    @media (max-width: 360px) {
-      .grid.kpi {
-        grid-template-columns: 1fr;
+      .card {
+        box-shadow: none !important;
+        border-color: var(--border) !important;
       }
-      
-      .controls {
-        flex-direction: column;
+      .wrap {
+        max-width: none !important;
       }
-      
-      .action-buttons {
-        grid-template-columns: 1fr;
+      .no-print { display: none !important; }
+      /* Стили для печати кнопок и полей */
+      button, input, textarea {
+        background: var(--input-bg) !important;
+        color: var(--input-text) !important;
+        border: 1px solid var(--border) !important;
+      }
+      .btn-primary {
+        background: var(--btn-primary-bg) !important;
+        color: var(--btn-text) !important;
+        border: 1px solid var(--btn-primary-border) !important;
+      }
+      .btn-danger {
+        background: var(--btn-danger-bg) !important;
+        color: var(--btn-text) !important;
+        border: 1px solid var(--btn-danger-border) !important;
+      }
+      .pill {
+        border: 1px solid var(--border) !important;
+        color: var(--mut) !important;
+      }
+      .pill.good {
+        border-color: #1f5132 !important;
+        color: #34d399 !important;
+        background: #0d1f14 !important;
+      }
+      .pill.warn {
+        border-color: #5a410e !important;
+        color: #fbbf24 !important;
+        background: #1d1507 !important;
+      }
+      .pill.bad {
+        border-color: #512228 !important;
+        color: #f87171 !important;
+        background: #1a0f10 !important;
+      }
+      /* Текст в таблицах */
+      .table th, .table td {
+        color: var(--text) !important;
+        border-bottom: 1px dashed var(--border) !important;
+      }
+      .knum, .title, .mut {
+        color: var(--text) !important;
       }
     }
   </style>
 </head>
 <body>
-  <div class="header">
-    <h1>🍜 Чи-Фань — Итоги + Премия</h1>
-    <div class="sub">3% × Выручка × ramp(95–100%) × Quality</div>
-  </div>
-
-  <div class="controls">
-    <div class="control-group">
-      <label class="mut">Период</label>
-      <input type="month" id="m" />
+<header>
+  <div class="wrap">
+    <div class="row">
+      <div style="flex:1 1 auto">
+        <h1>Чи-Фань — Итоги месяца + Премия</h1>
+        <div class="sub">Формула: 3% × Выручка × ramp(план 95–100%) × Quality (аудит 35% · контроль 30% · тайный 20% · отзывы 15%)</div>
+      </div>
+      <div class="row">
+        <label class="pill">Период: <input type="month" id="m" /></label>
+        <label class="pill">Филиал: <select id="b"></select></label>
+        <button class="btn-primary no-print" id="edit">Редактировать</button>
+        <button class="no-print" id="print">Печать/PDF</button>
+        <input type="file" id="importJson" accept=".json" class="no-print" style="display:none" />
+        <button class="no-print" id="loadJson">Загрузить JSON</button>
+        <button class="no-print" id="btn-autorotate">Автопрокрутка: выкл</button>
+        <div class="theme-toggle" id="themeToggle" title="Переключить тему"></div>
+      </div>
     </div>
-    <div class="control-group">
-      <label class="mut">Филиал</label>
-      <select id="b"></select>
-    </div>
   </div>
+</header>
 
-  <div class="action-buttons">
-    <button class="btn-primary" id="edit">✏️ Редактировать</button>
-    <button id="btn-compare">📊 Сравнить</button>
-    <button id="export">📤 Экспорт JSON</button>
-    <button class="btn-primary" id="import">📥 Импорт JSON</button>
-    <button class="btn-danger" id="reset">🔄 Сброс</button>
-    <div class="theme-toggle" id="themeToggle" title="Переключить тему">🌙</div>
-  </div>
-
-  <input type="file" id="fileInput" class="file-input" accept=".json" />
-
+<main class="wrap">
   <div class="grid kpi" id="kpi-grid"></div>
 
-  <div class="grid three">
+  <div class="grid three" style="margin-top:14px">
     <section class="card">
       <div class="split">
         <div>
-          <div class="title">Выполнение плана</div>
+          <div class="title">Выполнение плана по выручке</div>
           <div class="knum" id="kpi-fulfill-label">—</div>
+          <div class="legend" style="margin-top:8px">
+            <div><span class="dot" style="background:var(--accent)"></span>Факт</div>
+            <div><span class="dot" style="background:#64748b"></span>План</div>
+          </div>
         </div>
-        <div class="pill" id="pill-gap">Гэп: —</div>
+        <svg class="ring" viewBox="0 0 44 44" id="ring-fulfill">
+          <circle cx="22" cy="22" r="18" stroke="rgba(148,163,184,.25)" stroke-width="6" fill="none"/>
+          <circle cx="22" cy="22" r="18" stroke="var(--accent)" stroke-width="6" fill="none" stroke-linecap="round" stroke-dasharray="0 999"/>
+          <text x="22" y="25" text-anchor="middle" font-size="10" fill="var(--text)" font-weight="700">0%</text>
+        </svg>
       </div>
+      <div class="spacer"></div>
       <div class="bar"><i id="bar-fulfill" style="width:0%"></i></div>
-      <div style="display: flex; justify-content: space-between; font-size: 11px;">
-        <span>Факт: <span id="lbl-rev-fact" class="mono">—</span></span>
-        <span>План: <span id="lbl-rev-plan" class="mono">—</span></span>
+      <div class="row" style="margin-top:8px">
+        <span class="pill"><strong>Факт: </strong><span id="lbl-rev-fact" class="mono">—</span></span>
+        <span class="pill"><strong>План: </strong><span id="lbl-rev-plan" class="mono">—</span></span>
+        <span class="pill" id="pill-gap">Гэп: —</span>
       </div>
     </section>
 
@@ -340,643 +356,668 @@
           <div class="title">Доля доставки</div>
           <div class="knum" id="kpi-delivery-label">—</div>
         </div>
-        <div class="pill" id="delivery-pill">—</div>
+        <svg class="ring" viewBox="0 0 44 44" id="ring-delivery">
+          <circle cx="22" cy="22" r="18" stroke="rgba(148,163,184,.25)" stroke-width="6" fill="none"/>
+          <circle cx="22" cy="22" r="18" stroke="var(--good)" stroke-width="6" fill="none" stroke-linecap="round" stroke-dasharray="0 999"/>
+          <text x="22" y="25" text-anchor="middle" font-size="10" fill="var(--text)" font-weight="700">0%</text>
+        </svg>
       </div>
-      <div class="mut">Цель: 35–45%</div>
+      <div class="sub" style="font-size:12px;">Целевой коридор: 35–45%</div>
     </section>
 
     <section class="card">
       <div class="split">
         <div>
-          <div class="title">Health Score</div>
+          <div class="title">Здоровье филиала (Health Score)</div>
           <div class="knum"><span id="health-score">—</span></div>
+          <div class="sub" style="font-size:12px;">Композитный индекс по ключевым метрикам</div>
         </div>
         <span id="health-badge" class="badge">—</span>
       </div>
-      <div class="mut">Композитный индекс по метрикам</div>
+      <div class="spacer"></div>
+      <div class="mut" style="font-size:12px;">Метрики: Выполнение плана, Рейтинг отзывов, Аудит, Тайный покупатель, ФОТ/Выручка, Опоздания, Доля доставки.</div>
     </section>
   </div>
 
-  <section class="card">
+  <section class="card" style="margin-top:14px">
+    <div class="split">
+      <div>
+        <div class="title">Режим сравнения филиалов</div>
+        <div class="sub">Быстрые сравнения по ключевым KPI</div>
+      </div>
+      <button class="btn-primary no-print" id="btn-compare">Пересчитать сравнение</button>
+    </div>
+    <table class="table" id="tbl-compare">
+      <thead><tr><th>Метрика</th><th>Тихая</th><th>Тобольская</th><th>Лидер</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <section class="card" style="margin-top:14px">
     <div class="split">
       <div>
         <div class="title">Премия к выплате</div>
         <div class="knum" id="bonus-amount">—</div>
-        <div class="mut" id="bonus-info">База: 3% от выручки × Рампа × Quality</div>
+        <div class="mut" id="bonus-info">База: 3% от выручки · Рампа: 95–100% · Quality: аудит+контроль+тайный+отзывы</div>
       </div>
-      <div id="bonus-elig" class="pill">—</div>
+      <div style="text-align:right">
+        <div class="title">Статус рампы</div>
+        <div id="bonus-elig" class="pill">—</div>
+      </div>
     </div>
   </section>
 
-  <section class="grid two">
+  <section class="grid two" style="margin-top:14px">
     <div class="card">
-      <div class="title">Рейтинг филиалов</div>
+      <div class="split">
+        <div>
+          <div class="title">Рейтинг филиалов (по выполнению плана)</div>
+          <div class="sub">Мини-рейтинг из текущих данных</div>
+        </div>
+      </div>
       <table class="table" id="tbl-rating">
-        <thead><tr><th>#</th><th>Филиал</th><th>Выполнение</th></tr></thead>
+        <thead><tr><th>#</th><th>Филиал</th><th>Факт</th><th>План</th><th>Выполнение</th></tr></thead>
         <tbody></tbody>
       </table>
     </div>
 
     <div class="card">
-      <div class="title">Проблемы → Решения</div>
-      <textarea id="txt-notes" class="mono" style="width:100%; min-height:100px; margin-top:8px;" placeholder="Введите заметки..."></textarea>
-      <button class="tg-button" id="btn-copy" style="margin-top:8px;">📋 Копировать чек-лист</button>
+      <div class="split">
+        <div>
+          <div class="title">Проблемы → Решения</div>
+          <div class="sub">Разбей пункты построчно. Кнопкой — в буфер как чек-лист.</div>
+        </div>
+        <div class="row no-print">
+          <button id="btn-copy" class="btn-primary">Скопировать чек-лист</button>
+        </div>
+      </div>
+      <textarea id="txt-notes" class="mono" style="width:100%; min-height:140px; background:var(--input-bg); color:var(--input-text); border:1px solid var(--border); border-radius:10px;"></textarea>
     </div>
   </section>
 
-  <script>
-    const $ = s => document.querySelector(s);
-    const $$ = s => Array.from(document.querySelectorAll(s));
-    const fmt = new Intl.NumberFormat('ru-RU');
-    const rub = n => (isFinite(n) ? fmt.format(Math.round(n)) + ' ₽' : '—');
-    const pct = x => (isFinite(x) ? (Math.round(x * 1000) / 10) + '%' : '—');
-    const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
+  <section class="grid two" style="margin-top:14px">
+    <div class="card">
+      <div class="split">
+        <div>
+          <div class="title">Пороговые значения (JSON)</div>
+          <div class="sub" style="font-size:12px;">Настрой целевые коридоры: они окрашивают метрики и влияют на Health Score</div>
+        </div>
+        <div class="row no-print">
+          <button id="btn-apply-th" class="btn-primary">Применить пороги</button>
+        </div>
+      </div>
+      <textarea id="txt-thresholds" class="mono" style="width:100%; min-height:200px; background:var(--input-bg); color:var(--input-text); border:1px solid var(--border); border-radius:10px;"></textarea>
+    </div>
 
-    // Инициализация Telegram WebApp
-    const tg = window.Telegram?.WebApp;
-    const isTelegram = !!tg;
+    <div class="card">
+      <div class="title">Импорт/Экспорт</div>
+      <div class="row no-print" style="margin-top:8px">
+        <input type="file" id="csv" accept=".csv" />
+        <button id="exj">Экспорт JSON</button>
+        <button class="btn-danger" id="reset">Сброс к демо-данным</button>
+      </div>
+      <div class="sub" style="margin-top:8px">CSV: branch,month,revenue_plan,revenue_fact,avg_check,guests,delivery_share,fot_amount,reviews_rating_avg,reviews_count_neg,late_count,auditor_score,mystery_score,control_purchase_score,notes</div>
+    </div>
+  </section>
+</main>
 
-    // Базовые данные
-    let DATA = {
-      "month": "2025-10", // Исправлено на текущий месяц
-      "branches": [
-        {
-          "branch": "Тихая",
-          "month": "2025-10",
-          "revenue_plan": 2100000,
-          "revenue_fact": 1656806,
-          "avg_check": 785,
-          "guests": 2108,
-          "delivery_share": 0.18,
-          "fot_amount": 0,
-          "reviews_rating_avg": 4.37,
-          "reviews_count_neg": 13,
-          "late_count": 0,
-          "auditor_score": 70,
-          "mystery_score": 100,
-          "control_purchase_score": 85,
-          "notes": ""
-        },
-        {
-          "branch": "Тобольская",
-          "month": "2025-10",
-          "revenue_plan": 3500000,
-          "revenue_fact": 2935296,
-          "avg_check": 836,
-          "guests": 3510,
-          "delivery_share": 0.24,
-          "fot_amount": 0,
-          "reviews_rating_avg": 4.51,
-          "reviews_count_neg": 10,
-          "late_count": 0,
-          "auditor_score": 70,
-          "mystery_score": 100,
-          "control_purchase_score": 95,
-          "notes": ""
-        }
-      ]
-    };
-    const START = JSON.parse(JSON.stringify(DATA));
+<script>
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const fmt = new Intl.NumberFormat('ru-RU');
+const rub = n => (isFinite(n) ? fmt.format(Math.round(n)) + ' ₽' : '—');
+const pct = x => (isFinite(x) ? (Math.round(x * 1000) / 10) + '%' : '—');
+const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
 
-    let CFG = {
-      base_rate: 0.03,
-      ramp: { min: 0.95, max: 1.00 },
-      weights: { auditor: 0.35, control: 0.30, mystery: 0.20, reviews: 0.15 }
-    };
-
-    let TH = {
-      fulfillment: { warn: 0.95, good: 1.0 },
-      delivery: { min: 0.35, max: 0.45 },
-      reviews: { good: 4.4, warn: 4.2 },
-      auditor: { good: 85, warn: 80 },
-      mystery: { good: 80, warn: 75 },
-      control: { good: 85, warn: 80 },
-      lateness: { good: 5, warn: 8 },
-      negReviews: { good: 6, warn: 10 },
-      fotShare: { good: [0.18, 0.22], warn: [0.22, 0.25] }
-    };
-
-    let editMode = false;
-
-    function init() {
-      if (isTelegram) {
-        tg.ready();
-        tg.expand();
-        tg.MainButton.setText("💾 Сохранить данные").hide();
-        
-        if (tg.platform !== 'tdesktop') {
-          tg.BackButton.show();
-          tg.BackButton.onClick(() => {
-            tg.showConfirm("Закрыть приложение?", (ok) => {
-              if (ok) tg.close();
-            });
-          });
-        }
-      }
-
-      // Инициализация темы
-      initTheme();
-
-      // Установка текущей даты по умолчанию
-      const now = new Date();
-      const currentMonth = now.toISOString().slice(0, 7);
-      DATA.month = currentMonth;
-      DATA.branches.forEach(b => b.month = currentMonth);
-      
-      $('#m').value = DATA.month;
-      updateBranchSelect();
-      
-      render();
-      fillRating();
+let DATA = {
+  "month": "2025-09",
+  "branches": [
+    {
+      "branch": "Тихая",
+      "month": "2025-09",
+      "revenue_plan": 2100000,
+      "revenue_fact": 1656806,
+      "avg_check": 785,
+      "guests": 2108,
+      "delivery_share": 0.18,
+      "fot_amount": 0,
+      "reviews_rating_avg": 4.37,
+      "reviews_count_neg": 13,
+      "late_count": 0,
+      "auditor_score": 70,
+      "mystery_score": 100,
+      "control_purchase_score": 85,
+      "notes": ""
+    },
+    {
+      "branch": "Тобольская",
+      "month": "2025-09",
+      "revenue_plan": 3500000,
+      "revenue_fact": 2935296,
+      "avg_check": 836,
+      "guests": 3510,
+      "delivery_share": 0.24,
+      "fot_amount": 0,
+      "reviews_rating_avg": 4.51,
+      "reviews_count_neg": 10,
+      "late_count": 0,
+      "auditor_score": 70,
+      "mystery_score": 100,
+      "control_purchase_score": 95,
+      "notes": ""
     }
+  ]
+};
+const START = JSON.parse(JSON.stringify(DATA));
 
-    function updateBranchSelect() {
-      const s = $('#b');
-      s.innerHTML = '';
-      DATA.branches.forEach((b, i) => {
-        const o = document.createElement('option');
-        o.value = i;
-        o.textContent = b.branch;
-        s.appendChild(o);
-      });
-      s.value = 0;
+let CFG = {
+  base_rate: 0.03,
+  basis: "revenue",
+  ramp: { min: 0.95, max: 1.00 },
+  weights: { auditor: 0.35, control: 0.30, mystery: 0.20, reviews: 0.15 }
+};
+
+// Thresholds
+let TH = {
+  fulfillment: { warn: 0.95, good: 1.0 },
+  delivery: { min: 0.35, max: 0.45 },
+  reviews: { good: 4.4, warn: 4.2 },
+  auditor: { good: 85, warn: 80 },
+  mystery: { good: 80, warn: 75 },
+  control: { good: 85, warn: 80 },
+  lateness: { good: 5, warn: 8 },
+  negReviews: { good: 6, warn: 10 },
+  fotShare: { good: [0.18, 0.22], warn: [0.22, 0.25] }
+};
+
+let autorotateTimer = null;
+
+function init() {
+  $('#m').value = DATA.month;
+  const s = $('#b');
+  s.innerHTML = '';
+  DATA.branches.forEach((b, i) => {
+    const o = document.createElement('option');
+    o.value = i;
+    o.textContent = b.branch;
+    s.appendChild(o);
+  });
+  s.value = 0;
+  $('#txt-thresholds').value = JSON.stringify(TH, null, 2);
+  render();
+  fillCompare();
+  fillRating();
+}
+
+function curr() {
+  return DATA.branches[+$('#b').value || 0];
+}
+
+function qualityScore(b) {
+  const w = CFG.weights || {};
+  const auditor = (+b.auditor_score || 0) / 100;
+  const control = (+b.control_purchase_score || 0) / 100;
+  const mystery = (+b.mystery_score || 0) / 100;
+  const reviews = Math.max(0, Math.min(1, ((+b.reviews_rating_avg || 0) - 3.5) / 1.5));
+  const score = auditor * (w.auditor || 0) + control * (w.control || 0) +
+                mystery * (w.mystery || 0) + reviews * (w.reviews || 0);
+  return { score, details: { auditor, control, mystery, reviews } };
+}
+
+function rampCoef(plan, fact) {
+  const f = plan ? fact / plan : 0;
+  const r = CFG.ramp || { min: 0.95, max: 1.00 };
+  if (f < r.min) return 0;
+  if (f >= r.max) return 1;
+  const span = (r.max - r.min) || 0.05;
+  return (f - r.min) / span;
+}
+
+function compute(b) {
+  const base = (+b.revenue_fact || 0) * (CFG.base_rate || 0.03);
+  const ramp = rampCoef(+b.revenue_plan || 0, +b.revenue_fact || 0);
+  const q = qualityScore(b);
+  const payout = base * ramp * q.score;
+  const effRate = (CFG.base_rate || 0.03) * ramp * q.score;
+  const fulfill = (+b.revenue_plan || 0) ? (+b.revenue_fact || 0) / (+b.revenue_plan || 0) : 0;
+  return { base, ramp, quality: q.score, effRate, payout, fulfill };
+}
+
+function statusClass(value, metric) {
+  switch(metric) {
+    case 'fulfillment':
+      if (value >= TH.fulfillment.good) return 'good';
+      if (value >= TH.fulfillment.warn) return 'warn';
+      return 'bad';
+    case 'delivery':
+      if (value >= TH.delivery.min && value <= TH.delivery.max) return 'good';
+      if (Math.abs(value - TH.delivery.min) <= 0.05 || Math.abs(value - TH.delivery.max) <= 0.05) return 'warn';
+      return 'bad';
+    case 'reviews':
+      if (value >= TH.reviews.good) return 'good';
+      if (value >= TH.reviews.warn) return 'warn';
+      return 'bad';
+    case 'auditor':
+      if (value >= TH.auditor.good) return 'good';
+      if (value >= TH.auditor.warn) return 'warn';
+      return 'bad';
+    case 'mystery':
+      if (value >= TH.mystery.good) return 'good';
+      if (value >= TH.mystery.warn) return 'warn';
+      return 'bad';
+    case 'control':
+      if (value >= TH.control.good) return 'good';
+      if (value >= TH.control.warn) return 'warn';
+      return 'bad';
+    case 'lateness':
+      if (value <= TH.lateness.good) return 'good';
+      if (value <= TH.lateness.warn) return 'warn';
+      return 'bad';
+    case 'negReviews':
+      if (value <= TH.negReviews.good) return 'good';
+      if (value <= TH.negReviews.warn) return 'warn';
+      return 'bad';
+    case 'fotShare':
+      if (value >= TH.fotShare.good[0] && value <= TH.fotShare.good[1]) return 'good';
+      if (value > TH.fotShare.good[1] && value <= TH.fotShare.warn[1]) return 'warn';
+      if (value < TH.fotShare.good[0] && value >= 0.15) return 'warn';
+      return 'bad';
+  }
+  return 'good';
+}
+
+function healthScore(b, fotShare) {
+  const plan = +b.revenue_plan || 0, fact = +b.revenue_fact || 0;
+  const fulfill = plan ? fact / plan : 0;
+  const w = { fulfill: 0.28, reviews: 0.16, auditor: 0.12, mystery: 0.12, control: 0.10, fot: 0.12, late: 0.05, delivery: 0.05 };
+  function normFulfill(x) { return clamp(x / 1.0, 0, 1); }
+  function normBand(x, good, warn) { return x >= good ? 1 : (x >= warn ? 0.7 : 0.35); }
+  function normBandRev(x, good, warn) { return x <= good ? 1 : (x <= warn ? 0.7 : 0.35); }
+  function normCorridor(x, min, max) { if (x >= min && x <= max) return 1; if (Math.abs(x - min) <= 0.05 || Math.abs(x - max) <= 0.05) return 0.7; return 0.35; }
+
+  const nFulfill = normFulfill(fulfill);
+  const nReviews = normBand(b.reviews_rating_avg || 0, TH.reviews.good, TH.reviews.warn);
+  const nAud = normBand(b.auditor_score || 0, TH.auditor.good, TH.auditor.warn);
+  const nMy = normBand(b.mystery_score || 0, TH.mystery.good, TH.mystery.warn);
+  const nControl = normBand(b.control_purchase_score || 0, TH.control.good, TH.control.warn);
+  const nFot = (fotShare >= TH.fotShare.good[0] && fotShare <= TH.fotShare.good[1]) ? 1 : (fotShare <= TH.fotShare.warn[1] ? 0.7 : 0.35);
+  const nLate = normBandRev(b.late_count || 0, TH.lateness.good, TH.lateness.warn);
+  const nDel = normCorridor(b.delivery_share || 0, TH.delivery.min, TH.delivery.max);
+
+  const total = (nFulfill * w.fulfill + nReviews * w.reviews + nAud * w.auditor + nMy * w.mystery + nControl * w.control + nFot * w.fot + nLate * w.late + nDel * w.delivery) * 100;
+  return total;
+}
+
+function badgeByClass(cls) {
+  if (cls === 'good') return ['healthy', 'ОК'];
+  if (cls === 'warn') return ['middle', 'Нужно внимание'];
+  return ['risky', 'Проблема'];
+}
+
+function render() {
+  const b = curr();
+  const g = $('#kpi-grid');
+  g.innerHTML = '';
+
+  const fotShare = (+b.fot_amount || 0) / ((+b.revenue_fact) || 1);
+  const neg = +b.reviews_count_neg || 0;
+
+  const cards = [
+    { t: "Выручка (Факт)", v: rub(b.revenue_fact), s: `План: ${rub(b.revenue_plan)}`, cls: statusClass((+b.revenue_fact || 0) / ((+b.revenue_plan) || 1), 'fulfillment') },
+    { t: "Средний чек", v: fmt.format(b.avg_check) + ' ₽', s: `Гостей: ${fmt.format(b.guests)}`, cls: null },
+    { t: "ФОТ", v: rub(b.fot_amount), s: `Доля ФОТ: ${(Math.round(fotShare * 1000) / 10)}%`, cls: statusClass(fotShare, 'fotShare') },
+    { t: "Отзывы", v: (b.reviews_rating_avg ?? '—') + " ★", s: "Негативных: " + neg, cls: mergeWorst(statusClass(b.reviews_rating_avg, 'reviews'), statusClass(neg, 'negReviews')) },
+    { t: "Аудит", v: (b.auditor_score ?? '—') + "/100", s: "Контрольная закупка: " + (b.control_purchase_score ?? '—') + "/100", cls: mergeWorst(statusClass(b.auditor_score, 'auditor'), statusClass(b.control_purchase_score, 'control')) },
+    { t: "Тайный покупатель", v: (b.mystery_score ?? '—') + "/100", s: "", cls: statusClass(b.mystery_score, 'mystery') },
+    { t: "Доставка", v: pct(b.delivery_share), s: `Цель: ${Math.round(TH.delivery.min * 100)}–${Math.round(TH.delivery.max * 100)}%`, cls: statusClass(b.delivery_share, 'delivery') },
+    { t: "Гостей", v: fmt.format(b.guests), s: "Посетителей за месяц", cls: null }
+  ];
+
+  cards.forEach(c => {
+    const el = document.createElement('section');
+    el.className = 'card';
+    const pill = c.cls ? `<span class="pill ${c.cls === 'good' ? 'good' : (c.cls === 'warn' ? 'warn' : 'bad')}">${labelFor(c.cls)}</span>` : '';
+    el.innerHTML = `<div class="split"><div><div class="title">${c.t}</div><div class="knum">${c.v}</div><div class="mut">${c.s || ''}</div></div>${pill}</div>`;
+    g.appendChild(el);
+  });
+
+  // plan fulfillment visuals
+  const plan = +b.revenue_plan || 0, fact = +b.revenue_fact || 0;
+  const fulfill = plan ? fact / plan : 0;
+  $('#kpi-fulfill-label').textContent = pct(fulfill);
+  $('#lbl-rev-fact').textContent = rub(fact);
+  $('#lbl-rev-plan').textContent = rub(plan);
+  $('#bar-fulfill').style.width = clamp(fulfill * 100, 0, 150) + '%';
+  const gapEl = $('#pill-gap');
+  gapEl.textContent = (fact >= plan ? "Гэп: +" + rub(fact - plan) : "Гэп: −" + rub(Math.abs(fact - plan)));
+  gapEl.className = 'pill ' + (fact >= plan ? 'good' : (fulfill >= TH.fulfillment.warn ? 'warn' : 'bad'));
+  ring('#ring-fulfill', clamp(fulfill * 100, 0, 150), fulfill >= TH.fulfillment.good ? '#34d399' : (fulfill >= TH.fulfillment.warn ? '#f59e0b' : '#60a5fa'));
+  ring('#ring-delivery', clamp((b.delivery_share || 0) * 100, 0, 100), statusColor(b.delivery_share, 'delivery'));
+
+  // Health Score
+  const score = healthScore(b, fotShare);
+  $('#health-score').textContent = Math.round(score);
+  const [badgeCls, badgeText] = badgeByClass(score >= 80 ? 'good' : (score >= 65 ? 'warn' : 'bad'));
+  const hb = $('#health-badge');
+  hb.className = 'badge ' + badgeCls;
+  hb.textContent = badgeText;
+
+  // Notes
+  $('#txt-notes').value = (b.notes || '');
+
+  // Bonus
+  const r = compute(b);
+  $('#bonus-amount').textContent = rub(r.payout);
+  $('#bonus-info').textContent = `База: ${rub(r.base)} · Рампа: ${Math.round(r.ramp * 100)}% · Quality: ${Math.round(r.quality * 100)}% · Эфф. ставка: ${Math.round(r.effRate * 1000) / 10}%`;
+  const st = r.ramp === 0 ? 'bad' : (r.ramp < 1 ? 'warn' : 'good');
+  const tx = r.ramp === 0 ? 'Недопуск' : (r.ramp < 1 ? 'Частичный допуск' : 'Полный допуск');
+  const el = $('#bonus-elig');
+  el.className = 'pill ' + st;
+  el.textContent = tx;
+}
+
+function labelFor(cls) { return cls === 'good' ? 'ОК' : (cls === 'warn' ? 'Внимание' : 'Проблема'); }
+function statusColor(value, metric) {
+  const cls = statusClass(value, metric);
+  return cls === 'good' ? '#34d399' : (cls === 'warn' ? '#f59e0b' : '#60a5fa');
+}
+function mergeWorst(a, b) { if (a === 'bad' || b === 'bad') return 'bad'; if (a === 'warn' || b === 'warn') return 'warn'; return 'good'; }
+
+function ring(sel, percent, color) {
+  const el = document.querySelector(sel);
+  const c = el.querySelectorAll('circle')[1];
+  const t = el.querySelector('text');
+  const R = 18, C = 2 * Math.PI * R;
+  const p = clamp(percent, 0, 200);
+  const len = C * (p / 100);
+  c.setAttribute('stroke-dasharray', `${len} ${C - len}`);
+  c.setAttribute('stroke', color);
+  t.textContent = Math.round(p) + '%';
+}
+
+function fillCompare() {
+  const tbody = $('#tbl-compare tbody');
+  tbody.innerHTML = '';
+  const a = DATA.branches.find(x => x.branch === 'Тихая') || DATA.branches[0];
+  const b = DATA.branches.find(x => x.branch === 'Тобольская') || DATA.branches[1] || DATA.branches[0];
+  const dA = compute(a);
+  const dB = compute(b);
+  const rows = [
+    ['Выполнение плана', ratio(a.revenue_fact, a.revenue_plan), ratio(b.revenue_fact, b.revenue_plan), 'pct'],
+    ['Премия к выплате', dA.payout, dB.payout, 'rub'],
+    ['Средний чек', a.avg_check, b.avg_check, 'rub'],
+    ['Гостей', a.guests, b.guests, 'int'],
+    ['Доля доставки', a.delivery_share, b.delivery_share, 'pct'],
+    ['ФОТ/Выручка', (a.fot_amount || 0) / (a.revenue_fact || 1), (b.fot_amount || 0) / (b.revenue_fact || 1), 'pct'],
+    ['Отзывы ★', a.reviews_rating_avg, b.reviews_rating_avg, 'float1'],
+    ['Аудит', a.auditor_score, b.auditor_score, 'int'],
+    ['Контрольная закупка', a.control_purchase_score, b.control_purchase_score, 'int'],
+    ['Тайный покупатель', a.mystery_score, b.mystery_score, 'int'],
+    ['Опоздания', a.late_count, b.late_count, 'int-rev'],
+  ];
+
+  rows.forEach(([label, va, vb, type]) => {
+    const leader = leaderLabel(va, vb, type);
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${label}</td><td>${fmtVal(va, type)}</td><td>${fmtVal(vb, type)}</td><td>${leader}</td>`;
+    tbody.appendChild(tr);
+  });
+}
+
+function ratio(a, b) { a = +a || 0; b = +b || 0; return b ? a / b : 0; }
+
+function fmtVal(v, type) {
+  switch (type) {
+    case 'pct': return pct(v);
+    case 'rub': return fmt.format(v) + ' ₽';
+    case 'int': return fmt.format(v);
+    case 'float1': return (v == null || isNaN(v)) ? '—' : (Math.round(v * 10) / 10).toFixed(1);
+    case 'int-rev': return fmt.format(v) + ' ↓ лучше меньше';
+    default: return v;
+  }
+}
+
+function leaderLabel(a, b, type) {
+  let better = 'higher';
+  if (type === 'int-rev') better = 'lower';
+  if (type === 'pct' || type === 'rub' || type === 'int' || type === 'float1') {
+    if (better === 'higher') {
+      if (a > b) return 'Тихая';
+      if (b > a) return 'Тобольская';
+      return '—';
+    } else {
+      if (a < b) return 'Тихая';
+      if (b < a) return 'Тобольская';
+      return '—';
     }
+  }
+  return '—';
+}
 
-    function curr() {
-      return DATA.branches[+$('#b').value || 0];
-    }
+function fillRating() {
+  const tbody = $('#tbl-rating tbody');
+  tbody.innerHTML = '';
+  const items = DATA.branches.map(b => {
+    const plan = +b.revenue_plan || 0, fact = +b.revenue_fact || 0;
+    const fulfill = plan ? fact / plan : 0;
+    return { name: b.branch, plan, fact, fulfill };
+  }).sort((a, b) => b.fulfill - a.fulfill);
 
-    function qualityScore(b) {
-      const w = CFG.weights;
-      const auditor = (+b.auditor_score || 0) / 100;
-      const control = (+b.control_purchase_score || 0) / 100;
-      const mystery = (+b.mystery_score || 0) / 100;
-      const reviews = Math.max(0, Math.min(1, ((+b.reviews_rating_avg || 0) - 3.5) / 1.5));
-      const score = auditor * w.auditor + control * w.control + mystery * w.mystery + reviews * w.reviews;
-      return { score, details: { auditor, control, mystery, reviews } };
-    }
+  items.forEach((it, idx) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${idx === 0 ? '<span style="display:inline-block;width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#d97706,#f59e0b);color:#111;font-weight:800;display:flex;align-items:center;justify-content:center;">1</span>' : idx + 1}</td>
+      <td>${it.name}</td><td class="mono">${rub(it.fact)}</td><td class="mono">${rub(it.plan)}</td><td>${pct(it.fulfill)}</td>`;
+    tbody.appendChild(tr);
+  });
+}
 
-    function rampCoef(plan, fact) {
-      const f = plan ? fact / plan : 0;
-      const r = CFG.ramp;
-      if (f < r.min) return 0;
-      if (f >= r.max) return 1;
-      const span = (r.max - r.min) || 0.05;
-      return (f - r.min) / span;
-    }
+function applyThresholds() {
+  try {
+    const obj = JSON.parse($('#txt-thresholds').value);
+    TH = obj;
+    render();
+    fillCompare();
+    fillRating();
+  } catch (e) {
+    alert('Ошибка JSON порогов: ' + e.message);
+  }
+}
 
-    function compute(b) {
-      const base = (+b.revenue_fact || 0) * CFG.base_rate;
-      const ramp = rampCoef(+b.revenue_plan || 0, +b.revenue_fact || 0);
-      const q = qualityScore(b);
-      const payout = base * ramp * q.score;
-      const effRate = CFG.base_rate * ramp * q.score;
-      const fulfill = (+b.revenue_plan || 0) ? (+b.revenue_fact || 0) / (+b.revenue_plan || 0) : 0;
-      return { base, ramp, quality: q.score, effRate, payout, fulfill };
-    }
+function copyChecklist() {
+  const txt = $('#txt-notes').value.trim();
+  if (!txt) { alert('Нет текста заметок.'); return; }
+  const lines = txt.split(/\n+/).map(s => s.replace(/^[-—•\s]+/, '').trim()).filter(Boolean);
+  const checklist = lines.map(s => `□ ${s}`).join('\n');
+  navigator.clipboard.writeText(checklist).then(() => {
+    alert('Скопировано в буфер:\n\n' + checklist);
+  }).catch(() => alert('Не удалось скопировать (браузер запретил).'));
+}
 
-    function statusClass(value, metric) {
-      switch(metric) {
-        case 'fulfillment':
-          if (value >= TH.fulfillment.good) return 'good';
-          if (value >= TH.fulfillment.warn) return 'warn';
-          return 'bad';
-        case 'delivery':
-          if (value >= TH.delivery.min && value <= TH.delivery.max) return 'good';
-          if (Math.abs(value - TH.delivery.min) <= 0.05 || Math.abs(value - TH.delivery.max) <= 0.05) return 'warn';
-          return 'bad';
-        case 'reviews':
-          if (value >= TH.reviews.good) return 'good';
-          if (value >= TH.reviews.warn) return 'warn';
-          return 'bad';
-        case 'auditor':
-          if (value >= TH.auditor.good) return 'good';
-          if (value >= TH.auditor.warn) return 'warn';
-          return 'bad';
-        case 'mystery':
-          if (value >= TH.mystery.good) return 'good';
-          if (value >= TH.mystery.warn) return 'warn';
-          return 'bad';
-        case 'control':
-          if (value >= TH.control.good) return 'good';
-          if (value >= TH.control.warn) return 'warn';
-          return 'bad';
-        case 'lateness':
-          if (value <= TH.lateness.good) return 'good';
-          if (value <= TH.lateness.warn) return 'warn';
-          return 'bad';
-        case 'negReviews':
-          if (value <= TH.negReviews.good) return 'good';
-          if (value <= TH.negReviews.warn) return 'warn';
-          return 'bad';
-        case 'fotShare':
-          if (value >= TH.fotShare.good[0] && value <= TH.fotShare.good[1]) return 'good';
-          if (value > TH.fotShare.good[1] && value <= TH.fotShare.warn[1]) return 'warn';
-          if (value < TH.fotShare.good[0] && value >= 0.15) return 'warn';
-          return 'bad';
-      }
-      return 'good';
-    }
-
-    function healthScore(b, fotShare) {
-      const plan = +b.revenue_plan || 0, fact = +b.revenue_fact || 0;
-      const fulfill = plan ? fact / plan : 0;
-      const w = { fulfill: 0.28, reviews: 0.16, auditor: 0.12, mystery: 0.12, control: 0.10, fot: 0.12, late: 0.05, delivery: 0.05 };
-      
-      function normBand(x, good, warn) { return x >= good ? 1 : (x >= warn ? 0.7 : 0.35); }
-      function normBandRev(x, good, warn) { return x <= good ? 1 : (x <= warn ? 0.7 : 0.35); }
-      function normCorridor(x, min, max) { 
-        if (x >= min && x <= max) return 1; 
-        if (Math.abs(x - min) <= 0.05 || Math.abs(x - max) <= 0.05) return 0.7; 
-        return 0.35; 
-      }
-
-      const nFulfill = clamp(fulfill / 1.0, 0, 1);
-      const nReviews = normBand(b.reviews_rating_avg || 0, TH.reviews.good, TH.reviews.warn);
-      const nAud = normBand(b.auditor_score || 0, TH.auditor.good, TH.auditor.warn);
-      const nMy = normBand(b.mystery_score || 0, TH.mystery.good, TH.mystery.warn);
-      const nControl = normBand(b.control_purchase_score || 0, TH.control.good, TH.control.warn);
-      const nFot = (fotShare >= TH.fotShare.good[0] && fotShare <= TH.fotShare.good[1]) ? 1 : (fotShare <= TH.fotShare.warn[1] ? 0.7 : 0.35);
-      const nLate = normBandRev(b.late_count || 0, TH.lateness.good, TH.lateness.warn);
-      const nDel = normCorridor(b.delivery_share || 0, TH.delivery.min, TH.delivery.max);
-
-      const total = (nFulfill * w.fulfill + nReviews * w.reviews + nAud * w.auditor + nMy * w.mystery + nControl * w.control + nFot * w.fot + nLate * w.late + nDel * w.delivery) * 100;
-      return total;
-    }
-
-    function badgeByClass(cls) {
-      if (cls === 'good') return ['healthy', 'ОК'];
-      if (cls === 'warn') return ['middle', 'Внимание'];
-      return ['risky', 'Проблема'];
-    }
-
-    function render() {
-      const b = curr();
-      const g = $('#kpi-grid');
-      g.innerHTML = '';
-
-      const fotShare = (+b.fot_amount || 0) / ((+b.revenue_fact) || 1);
-      const neg = +b.reviews_count_neg || 0;
-
-      const cards = [
-        { t: "Выручка (Факт)", v: rub(b.revenue_fact), s: `План: ${rub(b.revenue_plan)}`, cls: statusClass((+b.revenue_fact || 0) / ((+b.revenue_plan) || 1), 'fulfillment') },
-        { t: "Средний чек", v: fmt.format(b.avg_check) + ' ₽', s: `Гостей: ${fmt.format(b.guests)}`, cls: null },
-        { t: "ФОТ", v: rub(b.fot_amount), s: `Доля ФОТ: ${(Math.round(fotShare * 1000) / 10)}%`, cls: statusClass(fotShare, 'fotShare') },
-        { t: "Отзывы", v: (b.reviews_rating_avg ?? '—') + " ★", s: "Негативных: " + neg, cls: mergeWorst(statusClass(b.reviews_rating_avg, 'reviews'), statusClass(neg, 'negReviews')) },
-        { t: "Аудит", v: (b.auditor_score ?? '—') + "/100", s: "Закупка: " + (b.control_purchase_score ?? '—') + "/100", cls: mergeWorst(statusClass(b.auditor_score, 'auditor'), statusClass(b.control_purchase_score, 'control')) },
-        { t: "Тайный гость", v: (b.mystery_score ?? '—') + "/100", s: "", cls: statusClass(b.mystery_score, 'mystery') },
-      ];
-
-      cards.forEach(c => {
-        const el = document.createElement('div');
-        el.className = 'card';
-        const pill = c.cls ? `<div class="pill ${c.cls}">${labelFor(c.cls)}</div>` : '';
-        el.innerHTML = `
-          <div class="title">${c.t}</div>
-          <div class="knum">${c.v}</div>
-          <div class="mut">${c.s || ''}</div>
-          ${pill}
-        `;
-        g.appendChild(el);
-      });
-
-      // Основные показатели
-      const plan = +b.revenue_plan || 0, fact = +b.revenue_fact || 0;
-      const fulfill = plan ? fact / plan : 0;
-      
-      $('#kpi-fulfill-label').textContent = pct(fulfill);
-      $('#lbl-rev-fact').textContent = rub(fact);
-      $('#lbl-rev-plan').textContent = rub(plan);
-      $('#bar-fulfill').style.width = clamp(fulfill * 100, 0, 150) + '%';
-      
-      const gapEl = $('#pill-gap');
-      gapEl.textContent = (fact >= plan ? "+" + rub(fact - plan) : "−" + rub(Math.abs(fact - plan)));
-      gapEl.className = 'pill ' + (fact >= plan ? 'good' : (fulfill >= TH.fulfillment.warn ? 'warn' : 'bad'));
-
-      // Доставка
-      $('#kpi-delivery-label').textContent = pct(b.delivery_share);
-      const deliveryPill = $('#delivery-pill');
-      deliveryPill.textContent = labelFor(statusClass(b.delivery_share, 'delivery'));
-      deliveryPill.className = 'pill ' + statusClass(b.delivery_share, 'delivery');
-
-      // Health Score
-      const score = healthScore(b, fotShare);
-      $('#health-score').textContent = Math.round(score);
-      const [badgeCls, badgeText] = badgeByClass(score >= 80 ? 'good' : (score >= 65 ? 'warn' : 'bad'));
-      const hb = $('#health-badge');
-      hb.className = 'badge ' + badgeCls;
-      hb.textContent = badgeText;
-
-      // Notes
-      $('#txt-notes').value = (b.notes || '');
-
-      // Bonus
-      const r = compute(b);
-      $('#bonus-amount').textContent = rub(r.payout);
-      $('#bonus-info').textContent = `База: ${rub(r.base)} · Рампа: ${Math.round(r.ramp * 100)}% · Quality: ${Math.round(r.quality * 100)}%`;
-      const st = r.ramp === 0 ? 'bad' : (r.ramp < 1 ? 'warn' : 'good');
-      const tx = r.ramp === 0 ? 'Недопуск' : (r.ramp < 1 ? 'Частично' : 'Полный');
-      const el = $('#bonus-elig');
-      el.className = 'pill ' + st;
-      el.textContent = tx;
-    }
-
-    function labelFor(cls) { return cls === 'good' ? 'ОК' : (cls === 'warn' ? 'Внимание' : 'Проблема'); }
-    function mergeWorst(a, b) { 
-      if (a === 'bad' || b === 'bad') return 'bad'; 
-      if (a === 'warn' || b === 'warn') return 'warn'; 
-      return 'good'; 
-    }
-
-    function fillRating() {
-      const tbody = $('#tbl-rating tbody');
-      tbody.innerHTML = '';
-      
-      const items = DATA.branches.map(b => {
-        const plan = +b.revenue_plan || 0, fact = +b.revenue_fact || 0;
-        const fulfill = plan ? fact / plan : 0;
-        return { name: b.branch, plan, fact, fulfill };
-      }).sort((a, b) => b.fulfill - a.fulfill);
-
-      items.forEach((it, idx) => {
-        const tr = document.createElement('tr');
-        const medal = idx === 0 ? '🥇' : (idx === 1 ? '🥈' : (idx === 2 ? '🥉' : ''));
-        tr.innerHTML = `
-          <td>${medal} ${idx + 1}</td>
-          <td>${it.name}</td>
-          <td>${pct(it.fulfill)}</td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-
-    function toggleEdit() {
-      editMode = !editMode;
-      
-      if (editMode) {
-        // Входим в режим редактирования
-        $('#edit').textContent = '💾 Сохранить';
-        showEditForm();
-        
-        if (isTelegram) {
-          // В Telegram используем Main Button для сохранения
-          tg.MainButton.setText("💾 Сохранить данные");
-          tg.MainButton.show();
-          tg.MainButton.onClick(saveAndExitEdit);
-        }
-      } else {
-        // Выход из режима редактирования с сохранением (для веб-версии)
-        $('#edit').textContent = '✏️ Редактировать';
-        saveEditData();
-        
-        if (isTelegram) {
-          tg.MainButton.hide();
-        }
-        
-        render();
-        fillRating();
-      }
-    }
-
-    function showEditForm() {
-      const b = curr();
-      const grid = $('#kpi-grid');
-      grid.innerHTML = '';
-      
-      const fields = [
-        ['revenue_plan', 'План выручки, ₽', 'number'],
-        ['revenue_fact', 'Факт выручки, ₽', 'number'],
-        ['avg_check', 'Средний чек, ₽', 'number'],
-        ['guests', 'Гостей, чел', 'number'],
-        ['delivery_share', 'Доля доставки (0-1)', 'number'],
-        ['fot_amount', 'ФОТ, ₽', 'number'],
-        ['reviews_rating_avg', 'Отзывы (1-5)', 'number'],
-        ['reviews_count_neg', 'Негативных отзывов', 'number'],
-        ['late_count', 'Опоздания', 'number'],
-        ['auditor_score', 'Аудит (0-100)', 'number'],
-        ['control_purchase_score', 'Закупка (0-100)', 'number'],
-        ['mystery_score', 'Тайный гость (0-100)', 'number']
-      ];
-
-      fields.forEach(([key, label, type]) => {
-        const val = b[key] ?? '';
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.innerHTML = `
-          <div class="title">${label}</div>
-          <input type="${type}" data-key="${key}" value="${val}" 
-                 style="width: 100%; margin-top: 8px;" />
-        `;
-        grid.appendChild(card);
-      });
-    }
-
-    function saveEditData() {
-      $$('#kpi-grid input').forEach(inp => {
-        const k = inp.dataset.key;
-        let v = inp.value;
-        if (k === 'delivery_share' || k === 'reviews_rating_avg') {
-          curr()[k] = parseFloat(v) || 0;
-        } else {
-          curr()[k] = +v || 0;
-        }
-      });
-    }
-
-    function saveAndExitEdit() {
-      saveEditData();
-      editMode = false;
-      $('#edit').textContent = '✏️ Редактировать';
-      
-      tg.MainButton.hide();
-      tg.showPopup({
-        title: "Сохранено",
-        message: "Данные успешно обновлены",
-        buttons: [{ type: "ok" }]
-      });
-      
-      render();
-      fillRating();
-    }
-
-    function copyChecklist() {
-      const txt = $('#txt-notes').value.trim();
-      if (!txt) { 
-        showAlert('Нет текста заметок.');
-        return; 
-      }
-      
-      const lines = txt.split(/\n+/).map(s => s.replace(/^[-—•\s]+/, '').trim()).filter(Boolean);
-      const checklist = lines.map(s => `□ ${s}`).join('\n');
-      
-      if (isTelegram) {
-        tg.sendData(JSON.stringify({ type: 'checklist', data: checklist }));
-        tg.showPopup({
-          title: "Скопировано",
-          message: "Чек-лист готов к использованию",
-          buttons: [{ type: "ok" }]
-        });
-      } else {
-        navigator.clipboard.writeText(checklist).then(() => {
-          showAlert('Чек-лист скопирован в буфер обмена');
-        }).catch(() => {
-          showAlert('Не удалось скопировать в буфер обмена');
-        });
-      }
-    }
-
-    function exportData() {
-      const dataStr = JSON.stringify(DATA, null, 2);
-      if (isTelegram) {
-        tg.sendData(JSON.stringify({ type: 'export', data: DATA }));
-        tg.showPopup({
-          title: "Экспорт",
-          message: "Данные отправлены в Telegram",
-          buttons: [{ type: "ok" }]
-        });
-      } else {
-        const blob = new Blob([dataStr], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'chifan-data.json';
-        a.click();
-        URL.revokeObjectURL(url);
-        showAlert('JSON файл скачан');
-      }
-    }
-
-    function importData() {
-      $('#fileInput').click();
-    }
-
-    function handleFileImport(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        try {
-          const importedData = JSON.parse(e.target.result);
-          
-          // Валидация структуры данных
-          if (!importedData.branches || !Array.isArray(importedData.branches)) {
-            throw new Error('Неверный формат JSON: отсутствует branches');
-          }
-          
-          if (importedData.branches.length === 0) {
-            throw new Error('Нет данных о филиалах');
-          }
-
-          DATA = importedData;
-          $('#m').value = DATA.month;
-          updateBranchSelect();
-          render();
-          fillRating();
-          
-          showAlert(`Успешно импортировано ${DATA.branches.length} филиалов`, 'Импорт данных');
-          
-        } catch (error) {
-          showAlert('Ошибка при импорте JSON: ' + error.message, 'Ошибка');
-        }
-      };
-      reader.readAsText(file);
-      
-      // Сброс input для возможности повторного выбора того же файла
-      event.target.value = '';
-    }
-
-    function showCompare() {
-      const a = DATA.branches.find(x => x.branch === 'Тихая') || DATA.branches[0];
-      const b = DATA.branches.find(x => x.branch === 'Тобольская') || DATA.branches[1] || DATA.branches[0];
-      
-      const comparison = `
-🏪 Сравнение филиалов:
-
-Тихая vs Тобольская
-
-📊 Выручка: ${rub(a.revenue_fact)} vs ${rub(b.revenue_fact)}
-🎯 Выполнение: ${pct(a.revenue_fact/a.revenue_plan)} vs ${pct(b.revenue_fact/b.revenue_plan)}
-💰 Премия: ${rub(compute(a).payout)} vs ${rub(compute(b).payout)}
-⭐ Отзывы: ${a.reviews_rating_avg}★ vs ${b.reviews_rating_avg}★
-📦 Доставка: ${pct(a.delivery_share)} vs ${pct(b.delivery_share)}
-      `.trim();
-      
-      showAlert(comparison, 'Сравнение филиалов');
-    }
-
-    function showAlert(message, title = 'Информация') {
-      if (isTelegram) {
-        tg.showPopup({
-          title: title,
-          message: message,
-          buttons: [{ type: "ok" }]
-        });
-      } else {
-        alert(title + '\n\n' + message);
-      }
-    }
-
-    // Функции для темы
-    function setTheme(theme) {
-      const root = document.documentElement;
-      if (theme === 'light') {
-        root.classList.add('theme-light');
-      } else {
-        root.classList.remove('theme-light');
-      }
-      localStorage.setItem('chifan-theme', theme);
-      
-      // Обновляем значок
-      const themeToggle = document.getElementById('themeToggle');
-      if (theme === 'light') {
-        themeToggle.textContent = '🌙';
-        themeToggle.title = 'Переключить на тёмную тему';
-      } else {
-        themeToggle.textContent = '☀️';
-        themeToggle.title = 'Переключить на светлую тему';
-      }
-    }
-
-    function initTheme() {
-      const saved = localStorage.getItem('chifan-theme');
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      const theme = saved || (prefersDark ? 'dark' : 'light');
-      setTheme(theme);
-    }
-
-    function toggleTheme() {
-      const isLight = document.documentElement.classList.contains('theme-light');
-      setTheme(isLight ? 'dark' : 'light');
-    }
-
-    // Обработчики событий
-    $('#b').addEventListener('change', render);
-    $('#m').addEventListener('change', e => {
-      DATA.month = e.target.value;
-      DATA.branches.forEach(x => x.month = DATA.month);
-      render();
-      fillRating();
+// Edit mode
+let editMode = false;
+function toggleEdit() {
+  editMode = !editMode;
+  $('#edit').textContent = editMode ? 'Готово' : 'Редактировать';
+  const b = curr();
+  const grid = $('#kpi-grid');
+  const fields = [
+    ['revenue_plan', 'План выручки, ₽'],
+    ['revenue_fact', 'Факт выручки, ₽'],
+    ['avg_check', 'Средний чек, ₽'],
+    ['guests', 'Гостей, чел'],
+    ['delivery_share', 'Доля доставки, 0–1'],
+    ['fot_amount', 'ФОТ, ₽'],
+    ['reviews_rating_avg', 'Отзывы, ★ 1–5'],
+    ['reviews_count_neg', 'Негативных отзывов, шт'],
+    ['late_count', 'Опоздания, шт'],
+    ['auditor_score', 'Аудит, 0–100'],
+    ['control_purchase_score', 'Контрольная закупка, 0–100'],
+    ['mystery_score', 'Тайный покупатель, 0–100']
+  ];
+  if (editMode) {
+    grid.innerHTML = '';
+    fields.forEach(([key, label]) => {
+      const val = b[key] ?? '';
+      const card = document.createElement('section');
+      card.className = 'card';
+      card.innerHTML = `<div class="title">${label}</div><input type="text" data-key="${key}" value="${val}" />`;
+      grid.appendChild(card);
     });
-    
-    $('#edit').addEventListener('click', toggleEdit);
-    $('#btn-compare').addEventListener('click', showCompare);
-    $('#export').addEventListener('click', exportData);
-    $('#import').addEventListener('click', importData);
-    $('#btn-copy').addEventListener('click', copyChecklist);
-    $('#fileInput').addEventListener('change', handleFileImport);
-    $('#themeToggle').addEventListener('click', toggleTheme);
-    
-    $('#reset').addEventListener('click', () => {
-      if (confirm('Сбросить все данные к демо-версии?')) {
-        DATA = JSON.parse(JSON.stringify(START));
-        init();
-        showAlert('Данные сброшены к демо-версии');
+  } else {
+    $$('#kpi-grid input').forEach(inp => {
+      const k = inp.dataset.key;
+      let v = inp.value;
+      if (k === 'delivery_share' || k === 'reviews_rating_avg') {
+        b[k] = parseFloat(v) || 0;
+      } else {
+        b[k] = +v || 0;
       }
     });
+    render();
+    fillCompare();
+    fillRating();
+  }
+}
 
-    // Запуск приложения
-    init();
-  </script>
+// CSV import
+$('#csv').addEventListener('change', e => {
+  const f = e.target.files[0];
+  if (!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    try {
+      const lines = r.result.split(/\r?\n/).filter(x => x.trim().length);
+      const hdr = lines.shift().split(',').map(x => x.trim());
+      const idx = name => hdr.indexOf(name);
+      const req = ['branch','month','revenue_plan','revenue_fact','avg_check','guests','delivery_share','fot_amount','reviews_rating_avg','reviews_count_neg','late_count','auditor_score','mystery_score','control_purchase_score','notes'];
+      if (!req.every(x => hdr.includes(x))) { alert('CSV: нет нужных колонок'); return; }
+      const branches = [];
+      lines.forEach(line => {
+        const cells = [];
+        let cur = '', inQ = false;
+        for (let i = 0; i < line.length; i++) {
+          const ch = line[i];
+          if (ch === '"') { inQ = !inQ; continue; }
+          if (ch === ',' && !inQ) { cells.push(cur); cur = ''; } else { cur += ch; }
+        }
+        cells.push(cur);
+        const o = {};
+        req.forEach(col => { o[col] = cells[idx(col)] ?? ''; });
+        ['revenue_plan','revenue_fact','avg_check','guests','delivery_share','fot_amount','reviews_rating_avg','reviews_count_neg','late_count','auditor_score','mystery_score','control_purchase_score'].forEach(k => {
+          o[k] = parseFloat(o[k] || 0);
+        });
+        branches.push(o);
+      });
+      DATA = { month: branches[0]?.month || DATA.month, branches };
+      init();
+    } catch (err) {
+      alert('Ошибка CSV: ' + err.message);
+    }
+  };
+  r.readAsText(f, 'utf-8');
+});
+
+// JSON import
+$('#loadJson').addEventListener('click', () => $('#importJson').click());
+$('#importJson').addEventListener('change', e => {
+  const f = e.target.files[0];
+  if (!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    try {
+      const parsed = JSON.parse(r.result);
+      if (!parsed.branches || !Array.isArray(parsed.branches)) {
+        alert('Неверный формат JSON: отсутствует "branches"');
+        return;
+      }
+      DATA = parsed;
+      init();
+    } catch (err) {
+      alert('Ошибка JSON: ' + err.message);
+    }
+  };
+  r.readAsText(f);
+});
+
+// Handlers
+$('#b').addEventListener('change', render);
+$('#m').addEventListener('change', e => {
+  DATA.month = e.target.value;
+  DATA.branches.forEach(x => x.month = DATA.month);
+  render();
+  fillCompare();
+  fillRating();
+});
+$('#edit').addEventListener('click', toggleEdit);
+$('#print').addEventListener('click', () => window.print());
+$('#btn-compare').addEventListener('click', () => { fillCompare(); fillRating(); });
+$('#btn-copy').addEventListener('click', copyChecklist);
+$('#btn-apply-th').addEventListener('click', applyThresholds);
+$('#exj').addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify(DATA, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'chifan-data.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
+});
+$('#reset').addEventListener('click', () => {
+  DATA = JSON.parse(JSON.stringify(START));
+  init();
+});
+
+// Autorotate
+function toggleAutorotate() {
+  const btn = $('#btn-autorotate');
+  if (autorotateTimer) {
+    clearInterval(autorotateTimer);
+    autorotateTimer = null;
+    btn.textContent = 'Автопрокрутка: выкл';
+    return;
+  }
+  btn.textContent = 'Автопрокрутка: вкл';
+  autorotateTimer = setInterval(() => {
+    const sel = $('#b');
+    sel.selectedIndex = (sel.selectedIndex + 1) % sel.options.length;
+    sel.dispatchEvent(new Event('change'));
+  }, 20000);
+}
+$('#btn-autorotate').addEventListener('click', toggleAutorotate);
+
+// Theme Toggle
+function setTheme(theme) {
+  const root = document.documentElement;
+  if (theme === 'light') {
+    root.classList.add('theme-light');
+  } else {
+    root.classList.remove('theme-light');
+  }
+  localStorage.setItem('chifan-theme', theme);
+  
+  // Обновляем значок вручную
+  const themeToggle = document.getElementById('themeToggle');
+  if (theme === 'light') {
+    themeToggle.textContent = '🌙';
+  } else {
+    themeToggle.textContent = '☀️';
+  }
+}
+
+function initTheme() {
+  const saved = localStorage.getItem('chifan-theme');
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const theme = saved || (prefersDark ? 'dark' : 'light');
+  setTheme(theme);
+}
+
+$('#themeToggle').addEventListener('click', () => {
+  const isLight = document.documentElement.classList.contains('theme-light');
+  setTheme(isLight ? 'dark' : 'light');
+});
+
+// Bootstrap
+init();
+initTheme();
+</script>
 </body>
 </html>
