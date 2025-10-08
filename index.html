@@ -13,7 +13,7 @@
       --mut: #a7b0bf;
       --border: #1f2330;
       --accent: #60a5fa;
-      --good: #22c55e;
+      --good: #22c8c5; /* Изменен зеленый на бирюзовый */
       --bad: #ef4444;
       --warn: #f59e0b;
       --btn-bg: #0e1726;
@@ -26,7 +26,7 @@
       --btn-danger-border: #ef4444;
       --input-bg: #0f1219;
       --input-text: #e8edf5;
-      transition: background-color 1.1s ease, color 1.1s ease;
+      transition: background-color 0.3s ease, color 0.3s ease;
     }
 
     :root.theme-light {
@@ -36,9 +36,9 @@
       --mut: #6b7280;
       --border: #e5e7eb;
       --accent: #3b82f6;
-      --good: #22c55e;
-      --bad: #ef4444;
-      --warn: #f59e0b;
+      --good: #0d9488; /* Бирюзовый для светлой темы */
+      --bad: #dc2626;
+      --warn: #d97706;
       --btn-bg: #f3f4f6;
       --btn-border: #d1d5db;
       --btn-text: #111827;
@@ -46,7 +46,7 @@
       --btn-primary-bg: #dbeafe;
       --btn-primary-border: #3b82f6;
       --btn-danger-bg: #fee2e2;
-      --btn-danger-border: #ef4444;
+      --btn-danger-border: #dc2626;
       --input-bg: #f9fafb;
       --input-text: #111827;
     }
@@ -59,7 +59,7 @@
       color: var(--text);
       padding: 12px;
       padding-bottom: 20px;
-      transition: background-color 1.1s ease, color 1.1s ease;
+      transition: background-color 0.3s ease, color 0.3s ease;
     }
     
     .header {
@@ -95,7 +95,7 @@
       outline: none;
       width: 100%;
       font-size: 14px;
-      transition: background-color 1.1s ease, color 1.1s ease, border-color 1.1s ease;
+      transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
     }
     
     button {
@@ -171,7 +171,7 @@
       border-radius: 16px;
       padding: 16px;
       position: relative;
-      transition: background-color 1.1s ease, border-color 1.1s ease;
+      transition: background-color 0.3s ease, border-color 0.3s ease;
     }
     
     .title { font-size: 12px; color: var(--mut); margin-bottom: 6px; }
@@ -186,10 +186,10 @@
       padding: 4px 8px;
       border-radius: 999px;
       border: 1px solid var(--border);
-      transition: background-color 1.1s ease, color 1.1s ease, border-color 1.1s ease;
+      transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
     }
     
-    .pill.good { border-color: #1f5132; color: #34d399; background: #0d1f14; }
+    .pill.good { border-color: #115e59; color: #2dd4bf; background: #042f2e; }
     .pill.warn { border-color: #5a410e; color: #fbbf24; background: #1d1507; }
     .pill.bad { border-color: #512228; color: #f87171; background: #1a0f10; }
     
@@ -200,10 +200,10 @@
       border-radius: 999px;
       font-size: 11px;
       border: 1px solid var(--border);
-      transition: background-color 1.1s ease, color 1.1s ease, border-color 1.1s ease;
+      transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
     }
     
-    .badge.healthy { background: #0d1f14; color: #34d399; border-color: #1f5132; }
+    .badge.healthy { background: #042f2e; color: #2dd4bf; border-color: #115e59; }
     .badge.middle { background: #1d1507; color: #fbbf24; border-color: #5a410e; }
     .badge.risky { background: #1a0f10; color: #f87171; border-color: #512228; }
     
@@ -398,11 +398,11 @@
 
     // Базовые данные
     let DATA = {
-      "month": "2025-09",
+      "month": "2025-10", // Исправлено на текущий месяц
       "branches": [
         {
           "branch": "Тихая",
-          "month": "2025-09",
+          "month": "2025-10",
           "revenue_plan": 2100000,
           "revenue_fact": 1656806,
           "avg_check": 785,
@@ -419,7 +419,7 @@
         },
         {
           "branch": "Тобольская",
-          "month": "2025-09",
+          "month": "2025-10",
           "revenue_plan": 3500000,
           "revenue_fact": 2935296,
           "avg_check": 836,
@@ -477,6 +477,12 @@
       // Инициализация темы
       initTheme();
 
+      // Установка текущей даты по умолчанию
+      const now = new Date();
+      const currentMonth = now.toISOString().slice(0, 7);
+      DATA.month = currentMonth;
+      DATA.branches.forEach(b => b.month = currentMonth);
+      
       $('#m').value = DATA.month;
       updateBranchSelect();
       
@@ -974,5 +980,3 @@
   </script>
 </body>
 </html>
-
-
