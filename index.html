@@ -1,1366 +1,982 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Чи-Фань — Выручка в реальном времени</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <style>
-        :root {
-            --primary-color: #4285F4;
-            --success-color: #4285F4;
-            --warning-color: #F4B400;
-            --danger-color: #E53935;
-            --bg-color: #0d1117;
-            --card-bg: #1a202c;
-            --text-primary: #e6f1ff;
-            --text-secondary: #b3c3d2;
-            --border-color: #1f2838;
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --shadow-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-        }
-        [data-theme="dark"] {
-            --bg-color: #0d1117;
-            --card-bg: #1a202c;
-            --text-primary: #e6f1ff;
-            --text-secondary: #b3c3d2;
-            --border-color: #1f2838;
-        }
-        [data-theme="light"] {
-            --bg-color: #f8fafc;
-            --card-bg: #ffffff;
-            --text-primary: #1e293b;
-            --text-secondary: #64748b;
-            --border-color: #e2e8f0;
-        }
-        body {
-            font-family: 'Inter', sans-serif;
-            margin: 0;
-            padding: 20px;
-            background: var(--bg-color);
-            color: var(--text-primary);
-            line-height: 1.6;
-            transition: background 0.3s ease, color 0.3s ease;
-        }
-        .container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-        h1 {
-            margin: 0;
-            color: var(--primary-color);
-            font-weight: 700;
-            font-size: 2.5rem;
-        }
-        .theme-toggle {
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 10px;
-            border-radius: 50%;
-            cursor: pointer;
-            transition: background 0.3s ease, transform 0.2s ease;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-        }
-        .theme-toggle:hover {
-            background: #3971db;
-            transform: scale(1.1);
-        }
-        .theme-toggle:active {
-            transform: scale(0.95);
-        }
-        #last-update {
-            text-align: center;
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 5px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 8px;
-            padding: 8px 15px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-        }
-        #business-day-info {
-            text-align: center;
-            color: var(--text-primary);
-            font-size: 0.9rem;
-            margin-bottom: 15px;
-            padding: 8px 15px;
-            background: rgba(66, 133, 244, 0.1);
-            border-left: 3px solid var(--primary-color);
-            border-radius: 8px;
-            border: 1px solid rgba(66, 133, 244, 0.1);
-            backdrop-filter: blur(10px);
-        }
-        .export-buttons {
-            display: flex;
-            gap: 10px;
-            margin-top: 20px;
-            flex-wrap: wrap;
-            justify-content: center;
-            z-index: 10;
-            position: relative;
-        }
-        .export-btn {
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 0.9rem;
-            box-shadow: 0 2px 6px rgba(66, 133, 244, 0.3);
-            backdrop-filter: blur(5px);
-        }
-        .export-btn:hover {
-            background: #3971db;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(66, 133, 244, 0.4);
-        }
-        .export-btn:active {
-            transform: translateY(0);
-        }
-        .metrics-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-        .metric-card {
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: var(--shadow);
-            text-align: center;
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            animation: slideIn 0.5s ease;
-            opacity: 0;
-            transform: translateY(20px);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(5px);
-        }
-        .metric-card.fade-in {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        .metric-card:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--shadow-hover);
-            border-color: rgba(255, 255, 255, 0.1);
-        }
-        .metric-icon {
-            font-size: 2rem;
-            color: var(--primary-color);
-            margin-bottom: 10px;
-            transition: transform 0.3s ease;
-        }
-        .metric-icon:hover {
-            transform: scale(1.2);
-        }
-        .metric-value {
-            font-size: 2rem;
-            font-weight: 700;
-            color: var(--text-primary);
-            margin-bottom: 5px;
-            transition: color 0.3s ease;
-        }
-        .metric-label {
-            color: var(--text-secondary);
-            font-size: 0.9rem;
-            transition: color 0.3s ease;
-        }
-        .progress-container {
-            margin: 20px 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        .progress-header {
-            display: flex;
-            justify-content: space-between;
-            width: 100%;
-            margin-bottom: 10px;
-            font-size: 1rem;
-            font-weight: 500;
-        }
-        .progress-bar {
-            width: 100%;
-            height: 20px;
-            background: var(--border-color);
-            border-radius: 10px;
-            overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(5px);
-        }
-        .progress-fill {
-            height: 100%;
-            transition: width 1s ease;
-            border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            background: linear-gradient(90deg, var(--primary-color), #3971db);
-        }
-        .progress-fill.good { background: linear-gradient(90deg, var(--success-color), #3971db); }
-        .progress-fill.warn { background: linear-gradient(90deg, var(--warning-color), #d97706); }
-        .progress-fill.bad { background: linear-gradient(90deg, var(--danger-color), #dc2626); }
-        .progress-text {
-            text-align: center;
-            font-weight: 500;
-            margin-top: 10px;
-            color: var(--text-primary);
-        }
-        .section {
-            margin-bottom: 40px;
-        }
-        .section-title {
-            font-size: 1.5rem;
-            font-weight: 600;
-            color: var(--text-primary);
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            position: relative;
-        }
-        .section-title::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            bottom: -5px;
-            width: 50px;
-            height: 3px;
-            background: var(--primary-color);
-            border-radius: 3px;
-        }
-        .venues-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-        }
-        .venue-card {
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: var(--shadow);
-            transition: box-shadow 0.3s ease, transform 0.3s ease;
-            cursor: pointer;
-            position: relative;
-            overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(5px);
-            transition: all 0.3s ease;
-        }
-        .venue-card:hover {
-            transform: translateY(-5px);
-            box-shadow: var(--shadow-hover);
-            border-color: rgba(255, 255, 255, 0.1);
-            background: rgba(255, 255, 255, 0.02);
-        }
-        .venue-name {
-            font-size: 1.2rem;
-            font-weight: 600;
-            margin-bottom: 10px;
-            color: var(--text-primary);
-            transition: color 0.3s ease;
-        }
-        .venue-metric {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 5px;
-            font-size: 0.9rem;
-            color: var(--text-secondary);
-            transition: color 0.3s ease;
-        }
-        .venue-metric-value {
-            font-weight: 500;
-            color: var(--text-primary);
-            transition: color 0.3s ease;
-        }
-        .charts-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-        .chart-container {
-            background: var(--card-bg);
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: var(--shadow);
-            transition: all 0.3s ease;
-        }
-        .chart-container canvas {
-            color: var(--text-primary);
-        }
-        @keyframes slideIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        @media (max-width: 768px) {
-            .charts-grid { grid-template-columns: 1fr; }
-            .venues-grid { grid-template-columns: 1fr; }
-            body { padding: 10px; }
-            .metric-card {
-                margin-bottom: 10px;
-            }
-        }
-        .toast {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: var(--success-color);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 8px;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            z-index: 1000;
-            box-shadow: 0 4px 12px rgba(66, 133, 244, 0.3);
-            backdrop-filter: blur(5px);
-        }
-        .toast.show {
-            opacity: 1;
-        }
-        .error-msg {
-            color: var(--danger-color);
-            text-align: center;
-            padding: 10px;
-            background: rgba(229, 57, 53, 0.1);
-            border-radius: 8px;
-            margin: 10px 0;
-            border: 1px solid rgba(229, 57, 53, 0.2);
-            backdrop-filter: blur(5px);
-        }
-        .data-selector {
-            margin-bottom: 10px;
-            padding: 5px;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            background: var(--card-bg);
-            color: var(--text-primary);
-            transition: all 0.3s ease;
-        }
-        .date-range-selector {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            align-items: center;
-            flex-wrap: wrap;
-            padding: 15px;
-            background: var(--card-bg);
-            border-radius: 12px;
-            box-shadow: var(--shadow);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(5px);
-            transition: all 0.3s ease;
-        }
-        .date-range-selector input, .date-range-selector button {
-            padding: 8px 12px;
-            border-radius: 6px;
-            border: 1px solid var(--border-color);
-            background: var(--card-bg);
-            color: var(--text-primary);
-            transition: all 0.3s ease;
-        }
-        .date-range-selector button {
-            background: var(--primary-color);
-            color: white;
-            border: none;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 6px rgba(66, 133, 244, 0.3);
-        }
-        .date-range-selector button:hover {
-            background: #3971db;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(66, 133, 244, 0.4);
-        }
-        .date-range-selector button:active {
-            transform: translateY(0);
-        }
-        .metric-value.good, .metric-value.warn, .metric-value.bad {
-            color: inherit;
-        }
-        .data-source-info {
-            text-align: center;
-            color: var(--text-secondary);
-            font-size: 0.8rem;
-            margin-top: 5px;
-            font-style: italic;
-            transition: color 0.3s ease;
-        }
-        .quick-periods {
-            display: flex;
-            gap: 8px;
-            margin-left: auto;
-            flex-wrap: wrap;
-        }
-        .period-btn {
-            background: var(--warning-color);
-            color: white;
-            border: none;
-            padding: 6px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 0.8rem;
-            white-space: nowrap;
-            box-shadow: 0 2px 6px rgba(244, 180, 0, 0.3);
-        }
-        .period-btn:hover {
-            background: #d97706;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(244, 180, 0, 0.4);
-        }
-        .period-btn.active {
-            background: var(--success-color);
-            box-shadow: 0 0 0 2px var(--success-color);
-            transform: scale(1.05);
-        }
-        .auto-refresh-info {
-            text-align: center;
-            color: var(--text-secondary);
-            font-size: 0.8rem;
-            margin-top: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 5px;
-            transition: color 0.3s ease;
-        }
-        /* Новые стили для разбивки заказов */
-        .orders-breakdown {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            margin-top: 15px;
-            padding-top: 15px;
-            border-top: 1px solid var(--border-color);
-            backdrop-filter: blur(5px);
-        }
-        .order-type {
-            text-align: center;
-            padding: 8px;
-            background: rgba(66, 133, 244, 0.1);
-            border-radius: 6px;
-            transition: all 0.3s ease;
-        }
-        .order-type.delivery { background: rgba(16, 185, 129, 0.1); }
-        .order-type.pickup { background: rgba(245, 158, 11, 0.1); }
-        .order-type.cafe { background: rgba(139, 92, 246, 0.1); }
-        .order-type-value {
-            font-weight: 600;
-            font-size: 1.1rem;
-            margin-bottom: 2px;
-            color: var(--text-primary);
-            transition: color 0.3s ease;
-        }
-        .order-type-label {
-            font-size: 0.7rem;
-            color: var(--text-secondary);
-            transition: color 0.3s ease;
-        }
-        /* Стили для модального окна */
-        .modal {
-            display: none;
-            position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0,0,0,0.7);
-            backdrop-filter: blur(5px);
-        }
-        .modal-content {
-            background: var(--card-bg);
-            margin: 5% auto;
-            padding: 20px;
-            border-radius: 12px;
-            width: 90%;
-            max-width: 500px;
-            box-shadow: var(--shadow);
-            position: relative;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(5px);
-        }
-        .close {
-            position: absolute;
-            right: 15px;
-            top: 10px;
-            font-size: 28px;
-            font-weight: bold;
-            cursor: pointer;
-            color: var(--text-secondary);
-            transition: color 0.3s ease;
-        }
-        .close:hover {
-            color: var(--text-primary);
-            transform: scale(1.2);
-        }
-        .venue-details-btn {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            background: none;
-            border: none;
-            color: var(--primary-color);
-            cursor: pointer;
-            font-size: 1.1rem;
-            transition: all 0.3s ease;
-        }
-        .venue-details-btn:hover {
-            transform: scale(1.2);
-        }
-        /* Анимация для праздника */
-        @keyframes celebrate {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
-        }
-        .celebrate {
-            animation: celebrate 0.5s ease;
-        }
-        /* Стили для уведомления о новых данных */
-        .new-data-notification {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background: var(--primary-color);
-            color: white;
-            padding: 10px 15px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(66, 133, 244, 0.3);
-            cursor: pointer;
-            z-index: 1000;
-            display: none;
-            backdrop-filter: blur(5px);
-            transition: all 0.3s ease;
-        }
-        .new-data-notification:hover {
-            transform: scale(1.05);
-        }
-        .new-data-notification:active {
-            transform: scale(0.95);
-        }
-    </style>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no"/>
+  <title>Чи‑Фань · Итоги + Премия</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    :root {
+      --bg: #0b0c10;
+      --card: #111318;
+      --text: #e8edf5;
+      --mut: #a7b0bf;
+      --border: #1f2330;
+      --accent: #60a5fa;
+      --good: #22c8c5; /* Изменен зеленый на бирюзовый */
+      --bad: #ef4444;
+      --warn: #f59e0b;
+      --btn-bg: #0e1726;
+      --btn-border: #264063;
+      --btn-text: #e8edf5;
+      --btn-hover: #122039;
+      --btn-primary-bg: #0b1c32;
+      --btn-primary-border: #3b82f6;
+      --btn-danger-bg: #1a0f10;
+      --btn-danger-border: #ef4444;
+      --input-bg: #0f1219;
+      --input-text: #e8edf5;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    :root.theme-light {
+      --bg: #ffffff;
+      --card: #f9fafb;
+      --text: #111827;
+      --mut: #6b7280;
+      --border: #e5e7eb;
+      --accent: #3b82f6;
+      --good: #0d9488; /* Бирюзовый для светлой темы */
+      --bad: #dc2626;
+      --warn: #d97706;
+      --btn-bg: #f3f4f6;
+      --btn-border: #d1d5db;
+      --btn-text: #111827;
+      --btn-hover: #e5e7eb;
+      --btn-primary-bg: #dbeafe;
+      --btn-primary-border: #3b82f6;
+      --btn-danger-bg: #fee2e2;
+      --btn-danger-border: #dc2626;
+      --input-bg: #f9fafb;
+      --input-text: #111827;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font: 14px/1.45 -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 12px;
+      padding-bottom: 20px;
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 16px;
+      padding: 16px;
+      background: var(--card);
+      border-radius: 16px;
+      border: 1px solid var(--border);
+    }
+    
+    h1 { font-size: 18px; margin: 0 0 4px; }
+    .sub { color: var(--mut); font-size: 12px; }
+    
+    .controls {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    
+    .control-group {
+      flex: 1;
+      min-width: 120px;
+    }
+    
+    select, input, button, textarea {
+      background: var(--input-bg);
+      color: var(--input-text);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      outline: none;
+      width: 100%;
+      font-size: 14px;
+      transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+    }
+    
+    button {
+      cursor: pointer;
+      border: 1px solid var(--btn-border);
+      background: var(--btn-bg);
+      color: var(--btn-text);
+      border-radius: 12px;
+      transition: .2s ease;
+    }
+    
+    button:hover {
+      transform: translateY(-1px);
+      background: var(--btn-hover);
+    }
+    
+    .btn-primary {
+      border-color: var(--btn-primary-border);
+      background: var(--btn-primary-bg);
+    }
+    
+    .btn-danger {
+      border-color: var(--btn-danger-border);
+      background: var(--btn-danger-bg);
+    }
+    
+    .theme-toggle {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--text);
+      font-size: 18px;
+      transition: all 0.3s ease;
+    }
+    
+    .theme-toggle:hover {
+      transform: scale(1.05);
+    }
+    
+    .grid {
+      display: grid;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    
+    .grid.kpi {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .grid.two {
+      grid-template-columns: 1fr;
+    }
+    
+    .grid.three {
+      grid-template-columns: 1fr;
+    }
+    
+    @media (min-width: 480px) {
+      .grid.two {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+    
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+      position: relative;
+      transition: background-color 0.3s ease, border-color 0.3s ease;
+    }
+    
+    .title { font-size: 12px; color: var(--mut); margin-bottom: 6px; }
+    .knum { font-weight: 700; font-size: 22px; margin: 4px 0; }
+    .mut { color: var(--mut); font-size: 11px; }
+    .mono { font-family: 'Courier New', monospace; font-size: 11px; }
+    
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+    }
+    
+    .pill.good { border-color: #115e59; color: #2dd4bf; background: #042f2e; }
+    .pill.warn { border-color: #5a410e; color: #fbbf24; background: #1d1507; }
+    .pill.bad { border-color: #512228; color: #f87171; background: #1a0f10; }
+    
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      border: 1px solid var(--border);
+      transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+    }
+    
+    .badge.healthy { background: #042f2e; color: #2dd4bf; border-color: #115e59; }
+    .badge.middle { background: #1d1507; color: #fbbf24; border-color: #5a410e; }
+    .badge.risky { background: #1a0f10; color: #f87171; border-color: #512228; }
+    
+    .bar {
+      height: 6px;
+      background: #10161f;
+      border-radius: 99px;
+      overflow: hidden;
+      margin: 8px 0;
+    }
+    
+    .bar > i {
+      display: block;
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent), #60a5fa);
+      border-radius: 99px;
+    }
+    
+    .split { 
+      display: flex; 
+      gap: 12px; 
+      align-items: center; 
+      justify-content: space-between; 
+      flex-wrap: wrap; 
+    }
+    
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+    
+    .table th, .table td {
+      padding: 8px 6px;
+      border-bottom: 1px dashed var(--border);
+      text-align: left;
+    }
+    
+    .section-title {
+      font-size: 16px;
+      font-weight: 600;
+      margin: 20px 0 12px 0;
+      color: var(--text);
+    }
+    
+    .tg-button {
+      width: 100%;
+      padding: 12px;
+      background: var(--btn-primary-bg);
+      color: var(--btn-text);
+      border: 1px solid var(--btn-primary-border);
+      border-radius: 12px;
+      font-size: 14px;
+      margin: 6px 0;
+      cursor: pointer;
+    }
+    
+    .action-buttons {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+      margin: 12px 0;
+    }
+    
+    .file-input {
+      display: none;
+    }
+    
+    /* Адаптация для мобильных устройств */
+    @media (max-width: 360px) {
+      .grid.kpi {
+        grid-template-columns: 1fr;
+      }
+      
+      .controls {
+        flex-direction: column;
+      }
+      
+      .action-buttons {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
 </head>
-<body data-theme="light">
-    <div class="container">
-        <header>
-            <h1><i class="fas fa-utensils"></i> Чи-Фань — Выручка в реальном времени</h1>
-            <button class="theme-toggle" onclick="toggleTheme()"><i class="fas fa-moon"></i></button>
-        </header>
-        <div id="business-day-info">
-            <i class="fas fa-clock"></i> Текущий бизнес-день: <span id="business-day-date"></span>
-        </div>
-        <div id="last-update"><i class="fas fa-clock"></i> Загрузка...</div>
-        <div class="date-range-selector">
-            <label for="start-date">Начальная дата:</label>
-            <input type="date" id="start-date">
-            <label for="end-date">Конечная дата:</label>
-            <input type="date" id="end-date">
-            <button onclick="loadCustomData()"><i class="fas fa-download"></i> Загрузить</button>
-            <div class="quick-periods">
-                <button class="period-btn" onclick="setPeriod('today')">Сегодня</button>
-                <button class="period-btn" onclick="setPeriod('yesterday')">Вчера</button>
-                <button class="period-btn" onclick="setPeriod('thisWeek')">Эта неделя</button>
-                <button class="period-btn" onclick="setPeriod('thisMonth')">Этот месяц</button>
-                <button class="period-btn" onclick="setPeriod('lastMonth')">Прошлый месяц</button>
-            </div>
-        </div>
-        <div class="metrics-grid" id="metrics"></div>
-        <div class="progress-container">
-            <h3><i class="fas fa-chart-line"></i> Прогресс по плану</h3>
-            <div class="progress-header">
-                <span>Текущее: <span id="current-value">0 ₽</span></span>
-                <span>План: <span id="plan-value">0 ₽</span></span>
-            </div>
-            <div class="progress-bar">
-                <div id="plan-bar" class="progress-fill"></div>
-            </div>
-            <div id="progress-text" class="progress-text">0%</div>
-        </div>
-        <div class="charts-grid">
-            <div class="chart-container">
-                <h4>Выручка по филиалам</h4>
-                <canvas id="barChart1"></canvas>
-            </div>
-            <div class="chart-container">
-                <h4>Статистика по типам</h4>
-                <select class="data-selector" id="dataType" onchange="updateBarChart2()">
-                    <option value="revenue">Выручка</option>
-                    <option value="orders">Заказы</option>
-                    <option value="delivery">Доставка</option>
-                    <option value="cafe">Кафе</option>
-                    <option value="pickup">Самовывоз</option>
-                </select>
-                <canvas id="barChart2"></canvas>
-            </div>
-        </div>
-        <div class="section">
-            <h3 class="section-title"><i class="fas fa-building"></i> Круглогодичные филиалы</h3>
-            <div class="venues-grid" id="year-round"></div>
-        </div>
-        <div class="section">
-            <h3 class="section-title"><i class="fas fa-leaf"></i> Сезонные филиалы</h3>
-            <div class="venues-grid" id="seasonal"></div>
-        </div>
-        <div class="export-buttons">
-            <button class="export-btn" onclick="exportPDF('all')"><i class="fas fa-file-pdf"></i> Экспорт PDF (Все)</button>
-            <button class="export-btn" onclick="exportPDF('year-round')"><i class="fas fa-file-pdf"></i> PDF Круглогодичные</button>
-            <button class="export-btn" onclick="exportPDF('seasonal')"><i class="fas fa-file-pdf"></i> PDF Сезонные</button>
-        </div>
-        <div id="auto-refresh-info" class="auto-refresh-info">
-            <i class="fas fa-sync-alt"></i> Автообновление каждые 4 минуты
-        </div>
-        <div id="toast" class="toast"></div>
-        <!-- Уведомление о новых данных -->
-        <div id="new-data-notification" class="new-data-notification">
-            <i class="fas fa-bell"></i> Доступны новые данные! <u>Обновить</u>
-        </div>
+<body>
+  <div class="header">
+    <h1>🍜 Чи-Фань — Итоги + Премия</h1>
+    <div class="sub">3% × Выручка × ramp(95–100%) × Quality</div>
+  </div>
+
+  <div class="controls">
+    <div class="control-group">
+      <label class="mut">Период</label>
+      <input type="month" id="m" />
     </div>
-    <!-- Модальное окно для деталей филиала -->
-    <div id="venueModal" class="modal">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h3 id="modalVenueName"></h3>
-            <div id="modalVenueDetails"></div>
-        </div>
+    <div class="control-group">
+      <label class="mut">Филиал</label>
+      <select id="b"></select>
     </div>
-    <script>
-        let barChart1, barChart2;
-        let dataCache = {};
-        let currentStartDate = '';
-        let currentEndDate = '';
-        let activePeriod = 'today';
-        let autoRefreshInterval;
-        let lastDataHash = '';
-        // --- КОНСТАНТЫ И НАСТРОЙКИ ---
-        const DAILY_NETWORK_PLAN = 50000;
-        const BASE_DATA_URL = 'https://wwwgolybfs-dev.github.io/chifan2025/data/daily/';
-        const LATEST_DATA_URL = 'https://wwwgolybfs-dev.github.io/chifan2025/data/revenue.json';
-        const fmt = new Intl.NumberFormat('ru-RU');
-        const AUTO_REFRESH_INTERVAL = 4 * 60 * 1000; // 4 минуты
-        const fixedDailyPlans = {
-            "Тобольская": 70000,
-            "Тихая": 55000,
-            "Красота": 80000,
-        };
-        // --- УТИЛИТЫ ---
-        function getCurrentBusinessDay() {
-            const now = new Date();
-            // Если время меньше 03:00, текущий бизнес-день - это вчерашний календарный день
-            if (now.getHours() < 3) {
-                return new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1);
-            }
-            // Иначе текущий бизнес-день - это текущая дата
-            return new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  </div>
+
+  <div class="action-buttons">
+    <button class="btn-primary" id="edit">✏️ Редактировать</button>
+    <button id="btn-compare">📊 Сравнить</button>
+    <button id="export">📤 Экспорт JSON</button>
+    <button class="btn-primary" id="import">📥 Импорт JSON</button>
+    <button class="btn-danger" id="reset">🔄 Сброс</button>
+    <div class="theme-toggle" id="themeToggle" title="Переключить тему">🌙</div>
+  </div>
+
+  <input type="file" id="fileInput" class="file-input" accept=".json" />
+
+  <div class="grid kpi" id="kpi-grid"></div>
+
+  <div class="grid three">
+    <section class="card">
+      <div class="split">
+        <div>
+          <div class="title">Выполнение плана</div>
+          <div class="knum" id="kpi-fulfill-label">—</div>
+        </div>
+        <div class="pill" id="pill-gap">Гэп: —</div>
+      </div>
+      <div class="bar"><i id="bar-fulfill" style="width:0%"></i></div>
+      <div style="display: flex; justify-content: space-between; font-size: 11px;">
+        <span>Факт: <span id="lbl-rev-fact" class="mono">—</span></span>
+        <span>План: <span id="lbl-rev-plan" class="mono">—</span></span>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="split">
+        <div>
+          <div class="title">Доля доставки</div>
+          <div class="knum" id="kpi-delivery-label">—</div>
+        </div>
+        <div class="pill" id="delivery-pill">—</div>
+      </div>
+      <div class="mut">Цель: 35–45%</div>
+    </section>
+
+    <section class="card">
+      <div class="split">
+        <div>
+          <div class="title">Health Score</div>
+          <div class="knum"><span id="health-score">—</span></div>
+        </div>
+        <span id="health-badge" class="badge">—</span>
+      </div>
+      <div class="mut">Композитный индекс по метрикам</div>
+    </section>
+  </div>
+
+  <section class="card">
+    <div class="split">
+      <div>
+        <div class="title">Премия к выплате</div>
+        <div class="knum" id="bonus-amount">—</div>
+        <div class="mut" id="bonus-info">База: 3% от выручки × Рампа × Quality</div>
+      </div>
+      <div id="bonus-elig" class="pill">—</div>
+    </div>
+  </section>
+
+  <section class="grid two">
+    <div class="card">
+      <div class="title">Рейтинг филиалов</div>
+      <table class="table" id="tbl-rating">
+        <thead><tr><th>#</th><th>Филиал</th><th>Выполнение</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <div class="card">
+      <div class="title">Проблемы → Решения</div>
+      <textarea id="txt-notes" class="mono" style="width:100%; min-height:100px; margin-top:8px;" placeholder="Введите заметки..."></textarea>
+      <button class="tg-button" id="btn-copy" style="margin-top:8px;">📋 Копировать чек-лист</button>
+    </div>
+  </section>
+
+  <script>
+    const $ = s => document.querySelector(s);
+    const $$ = s => Array.from(document.querySelectorAll(s));
+    const fmt = new Intl.NumberFormat('ru-RU');
+    const rub = n => (isFinite(n) ? fmt.format(Math.round(n)) + ' ₽' : '—');
+    const pct = x => (isFinite(x) ? (Math.round(x * 1000) / 10) + '%' : '—');
+    const clamp = (v, min, max) => Math.max(min, Math.min(max, v));
+
+    // Инициализация Telegram WebApp
+    const tg = window.Telegram?.WebApp;
+    const isTelegram = !!tg;
+
+    // Базовые данные
+    let DATA = {
+      "month": "2025-10", // Исправлено на текущий месяц
+      "branches": [
+        {
+          "branch": "Тихая",
+          "month": "2025-10",
+          "revenue_plan": 2100000,
+          "revenue_fact": 1656806,
+          "avg_check": 785,
+          "guests": 2108,
+          "delivery_share": 0.18,
+          "fot_amount": 0,
+          "reviews_rating_avg": 4.37,
+          "reviews_count_neg": 13,
+          "late_count": 0,
+          "auditor_score": 70,
+          "mystery_score": 100,
+          "control_purchase_score": 85,
+          "notes": ""
+        },
+        {
+          "branch": "Тобольская",
+          "month": "2025-10",
+          "revenue_plan": 3500000,
+          "revenue_fact": 2935296,
+          "avg_check": 836,
+          "guests": 3510,
+          "delivery_share": 0.24,
+          "fot_amount": 0,
+          "reviews_rating_avg": 4.51,
+          "reviews_count_neg": 10,
+          "late_count": 0,
+          "auditor_score": 70,
+          "mystery_score": 100,
+          "control_purchase_score": 95,
+          "notes": ""
         }
-        function getTodayDateString() {
-            return getCurrentBusinessDay().toISOString().split('T')[0];
-        }
-        function formatDateForInput(date) {
-            return date.toISOString().split('T')[0];
-        }
-        function getWeekStartDate(date = new Date()) {
-            const d = new Date(date);
-            const day = d.getDay();
-            const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-            d.setDate(diff);
-            return d;
-        }
-        function getMonthStartDate(date = new Date()) {
-            return new Date(date.getFullYear(), date.getMonth(), 1);
-        }
-        function getLastMonthStartDate() {
-            const date = new Date();
-            return new Date(date.getFullYear(), date.getMonth() - 1, 1);
-        }
-        function getLastMonthEndDate() {
-            const date = new Date();
-            return new Date(date.getFullYear(), date.getMonth(), 0);
-        }
-        function isCurrentBusinessDay(dateStr) {
-            const now = new Date();
-            const businessDay = new Date(dateStr);
-            // Если время меньше 03:00, то текущий бизнес-день - это вчерашний календарный день
-            if (now.getHours() < 3) {
-                return businessDay.toDateString() === (new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1)).toDateString();
-            } else {
-                return businessDay.toDateString() === (new Date(now.getFullYear(), now.getMonth(), now.getDate())).toDateString();
-            }
-        }
-        function setPeriod(period) {
-            const businessDay = getCurrentBusinessDay();
-            let startDate, endDate;
-            document.querySelectorAll('.period-btn').forEach(btn => {
-                btn.classList.remove('active');
+      ]
+    };
+    const START = JSON.parse(JSON.stringify(DATA));
+
+    let CFG = {
+      base_rate: 0.03,
+      ramp: { min: 0.95, max: 1.00 },
+      weights: { auditor: 0.35, control: 0.30, mystery: 0.20, reviews: 0.15 }
+    };
+
+    let TH = {
+      fulfillment: { warn: 0.95, good: 1.0 },
+      delivery: { min: 0.35, max: 0.45 },
+      reviews: { good: 4.4, warn: 4.2 },
+      auditor: { good: 85, warn: 80 },
+      mystery: { good: 80, warn: 75 },
+      control: { good: 85, warn: 80 },
+      lateness: { good: 5, warn: 8 },
+      negReviews: { good: 6, warn: 10 },
+      fotShare: { good: [0.18, 0.22], warn: [0.22, 0.25] }
+    };
+
+    let editMode = false;
+
+    function init() {
+      if (isTelegram) {
+        tg.ready();
+        tg.expand();
+        tg.MainButton.setText("💾 Сохранить данные").hide();
+        
+        if (tg.platform !== 'tdesktop') {
+          tg.BackButton.show();
+          tg.BackButton.onClick(() => {
+            tg.showConfirm("Закрыть приложение?", (ok) => {
+              if (ok) tg.close();
             });
-            event.target.classList.add('active');
-            activePeriod = period;
-            switch(period) {
-                case 'today':
-                    startDate = new Date(businessDay);
-                    endDate = new Date(businessDay);
-                    break;
-                case 'yesterday':
-                    const yesterday = new Date(businessDay);
-                    yesterday.setDate(yesterday.getDate() - 1);
-                    startDate = yesterday;
-                    endDate = yesterday;
-                    break;
-                case 'thisWeek':
-                    startDate = getWeekStartDate(new Date(businessDay));
-                    endDate = new Date(businessDay);
-                    break;
-                case 'thisMonth':
-                    startDate = getMonthStartDate(new Date(businessDay));
-                    endDate = new Date(businessDay);
-                    break;
-                case 'lastMonth':
-                    startDate = getLastMonthStartDate();
-                    endDate = getLastMonthEndDate();
-                    break;
-            }
-            document.getElementById('start-date').value = formatDateForInput(startDate);
-            document.getElementById('end-date').value = formatDateForInput(endDate);
-            loadCustomData();
+          });
         }
-        function calculateDailyPlanFromMonthly(monthlyPlan, dateStr, isRevenue = true) {
-            if (!monthlyPlan || monthlyPlan === 0) {
-                return isRevenue ? DAILY_NETWORK_PLAN : 1000;
-            }
-            try {
-                const date = new Date(dateStr);
-                const year = date.getFullYear();
-                const month = date.getMonth();
-                // Получаем количество дней в месяце
-                const daysInMonth = new Date(year, month + 1, 0).getDate();
-                // Рассчитываем средний дневной план
-                const dailyPlan = monthlyPlan / daysInMonth;
-                return isRevenue ? dailyPlan : Math.round(dailyPlan);
-            } catch (e) {
-                console.warn('Ошибка расчета дневного плана:', e);
-                return isRevenue ? DAILY_NETWORK_PLAN : 1000;
-            }
+      }
+
+      // Инициализация темы
+      initTheme();
+
+      // Установка текущей даты по умолчанию
+      const now = new Date();
+      const currentMonth = now.toISOString().slice(0, 7);
+      DATA.month = currentMonth;
+      DATA.branches.forEach(b => b.month = currentMonth);
+      
+      $('#m').value = DATA.month;
+      updateBranchSelect();
+      
+      render();
+      fillRating();
+    }
+
+    function updateBranchSelect() {
+      const s = $('#b');
+      s.innerHTML = '';
+      DATA.branches.forEach((b, i) => {
+        const o = document.createElement('option');
+        o.value = i;
+        o.textContent = b.branch;
+        s.appendChild(o);
+      });
+      s.value = 0;
+    }
+
+    function curr() {
+      return DATA.branches[+$('#b').value || 0];
+    }
+
+    function qualityScore(b) {
+      const w = CFG.weights;
+      const auditor = (+b.auditor_score || 0) / 100;
+      const control = (+b.control_purchase_score || 0) / 100;
+      const mystery = (+b.mystery_score || 0) / 100;
+      const reviews = Math.max(0, Math.min(1, ((+b.reviews_rating_avg || 0) - 3.5) / 1.5));
+      const score = auditor * w.auditor + control * w.control + mystery * w.mystery + reviews * w.reviews;
+      return { score, details: { auditor, control, mystery, reviews } };
+    }
+
+    function rampCoef(plan, fact) {
+      const f = plan ? fact / plan : 0;
+      const r = CFG.ramp;
+      if (f < r.min) return 0;
+      if (f >= r.max) return 1;
+      const span = (r.max - r.min) || 0.05;
+      return (f - r.min) / span;
+    }
+
+    function compute(b) {
+      const base = (+b.revenue_fact || 0) * CFG.base_rate;
+      const ramp = rampCoef(+b.revenue_plan || 0, +b.revenue_fact || 0);
+      const q = qualityScore(b);
+      const payout = base * ramp * q.score;
+      const effRate = CFG.base_rate * ramp * q.score;
+      const fulfill = (+b.revenue_plan || 0) ? (+b.revenue_fact || 0) / (+b.revenue_plan || 0) : 0;
+      return { base, ramp, quality: q.score, effRate, payout, fulfill };
+    }
+
+    function statusClass(value, metric) {
+      switch(metric) {
+        case 'fulfillment':
+          if (value >= TH.fulfillment.good) return 'good';
+          if (value >= TH.fulfillment.warn) return 'warn';
+          return 'bad';
+        case 'delivery':
+          if (value >= TH.delivery.min && value <= TH.delivery.max) return 'good';
+          if (Math.abs(value - TH.delivery.min) <= 0.05 || Math.abs(value - TH.delivery.max) <= 0.05) return 'warn';
+          return 'bad';
+        case 'reviews':
+          if (value >= TH.reviews.good) return 'good';
+          if (value >= TH.reviews.warn) return 'warn';
+          return 'bad';
+        case 'auditor':
+          if (value >= TH.auditor.good) return 'good';
+          if (value >= TH.auditor.warn) return 'warn';
+          return 'bad';
+        case 'mystery':
+          if (value >= TH.mystery.good) return 'good';
+          if (value >= TH.mystery.warn) return 'warn';
+          return 'bad';
+        case 'control':
+          if (value >= TH.control.good) return 'good';
+          if (value >= TH.control.warn) return 'warn';
+          return 'bad';
+        case 'lateness':
+          if (value <= TH.lateness.good) return 'good';
+          if (value <= TH.lateness.warn) return 'warn';
+          return 'bad';
+        case 'negReviews':
+          if (value <= TH.negReviews.good) return 'good';
+          if (value <= TH.negReviews.warn) return 'warn';
+          return 'bad';
+        case 'fotShare':
+          if (value >= TH.fotShare.good[0] && value <= TH.fotShare.good[1]) return 'good';
+          if (value > TH.fotShare.good[1] && value <= TH.fotShare.warn[1]) return 'warn';
+          if (value < TH.fotShare.good[0] && value >= 0.15) return 'warn';
+          return 'bad';
+      }
+      return 'good';
+    }
+
+    function healthScore(b, fotShare) {
+      const plan = +b.revenue_plan || 0, fact = +b.revenue_fact || 0;
+      const fulfill = plan ? fact / plan : 0;
+      const w = { fulfill: 0.28, reviews: 0.16, auditor: 0.12, mystery: 0.12, control: 0.10, fot: 0.12, late: 0.05, delivery: 0.05 };
+      
+      function normBand(x, good, warn) { return x >= good ? 1 : (x >= warn ? 0.7 : 0.35); }
+      function normBandRev(x, good, warn) { return x <= good ? 1 : (x <= warn ? 0.7 : 0.35); }
+      function normCorridor(x, min, max) { 
+        if (x >= min && x <= max) return 1; 
+        if (Math.abs(x - min) <= 0.05 || Math.abs(x - max) <= 0.05) return 0.7; 
+        return 0.35; 
+      }
+
+      const nFulfill = clamp(fulfill / 1.0, 0, 1);
+      const nReviews = normBand(b.reviews_rating_avg || 0, TH.reviews.good, TH.reviews.warn);
+      const nAud = normBand(b.auditor_score || 0, TH.auditor.good, TH.auditor.warn);
+      const nMy = normBand(b.mystery_score || 0, TH.mystery.good, TH.mystery.warn);
+      const nControl = normBand(b.control_purchase_score || 0, TH.control.good, TH.control.warn);
+      const nFot = (fotShare >= TH.fotShare.good[0] && fotShare <= TH.fotShare.good[1]) ? 1 : (fotShare <= TH.fotShare.warn[1] ? 0.7 : 0.35);
+      const nLate = normBandRev(b.late_count || 0, TH.lateness.good, TH.lateness.warn);
+      const nDel = normCorridor(b.delivery_share || 0, TH.delivery.min, TH.delivery.max);
+
+      const total = (nFulfill * w.fulfill + nReviews * w.reviews + nAud * w.auditor + nMy * w.mystery + nControl * w.control + nFot * w.fot + nLate * w.late + nDel * w.delivery) * 100;
+      return total;
+    }
+
+    function badgeByClass(cls) {
+      if (cls === 'good') return ['healthy', 'ОК'];
+      if (cls === 'warn') return ['middle', 'Внимание'];
+      return ['risky', 'Проблема'];
+    }
+
+    function render() {
+      const b = curr();
+      const g = $('#kpi-grid');
+      g.innerHTML = '';
+
+      const fotShare = (+b.fot_amount || 0) / ((+b.revenue_fact) || 1);
+      const neg = +b.reviews_count_neg || 0;
+
+      const cards = [
+        { t: "Выручка (Факт)", v: rub(b.revenue_fact), s: `План: ${rub(b.revenue_plan)}`, cls: statusClass((+b.revenue_fact || 0) / ((+b.revenue_plan) || 1), 'fulfillment') },
+        { t: "Средний чек", v: fmt.format(b.avg_check) + ' ₽', s: `Гостей: ${fmt.format(b.guests)}`, cls: null },
+        { t: "ФОТ", v: rub(b.fot_amount), s: `Доля ФОТ: ${(Math.round(fotShare * 1000) / 10)}%`, cls: statusClass(fotShare, 'fotShare') },
+        { t: "Отзывы", v: (b.reviews_rating_avg ?? '—') + " ★", s: "Негативных: " + neg, cls: mergeWorst(statusClass(b.reviews_rating_avg, 'reviews'), statusClass(neg, 'negReviews')) },
+        { t: "Аудит", v: (b.auditor_score ?? '—') + "/100", s: "Закупка: " + (b.control_purchase_score ?? '—') + "/100", cls: mergeWorst(statusClass(b.auditor_score, 'auditor'), statusClass(b.control_purchase_score, 'control')) },
+        { t: "Тайный гость", v: (b.mystery_score ?? '—') + "/100", s: "", cls: statusClass(b.mystery_score, 'mystery') },
+      ];
+
+      cards.forEach(c => {
+        const el = document.createElement('div');
+        el.className = 'card';
+        const pill = c.cls ? `<div class="pill ${c.cls}">${labelFor(c.cls)}</div>` : '';
+        el.innerHTML = `
+          <div class="title">${c.t}</div>
+          <div class="knum">${c.v}</div>
+          <div class="mut">${c.s || ''}</div>
+          ${pill}
+        `;
+        g.appendChild(el);
+      });
+
+      // Основные показатели
+      const plan = +b.revenue_plan || 0, fact = +b.revenue_fact || 0;
+      const fulfill = plan ? fact / plan : 0;
+      
+      $('#kpi-fulfill-label').textContent = pct(fulfill);
+      $('#lbl-rev-fact').textContent = rub(fact);
+      $('#lbl-rev-plan').textContent = rub(plan);
+      $('#bar-fulfill').style.width = clamp(fulfill * 100, 0, 150) + '%';
+      
+      const gapEl = $('#pill-gap');
+      gapEl.textContent = (fact >= plan ? "+" + rub(fact - plan) : "−" + rub(Math.abs(fact - plan)));
+      gapEl.className = 'pill ' + (fact >= plan ? 'good' : (fulfill >= TH.fulfillment.warn ? 'warn' : 'bad'));
+
+      // Доставка
+      $('#kpi-delivery-label').textContent = pct(b.delivery_share);
+      const deliveryPill = $('#delivery-pill');
+      deliveryPill.textContent = labelFor(statusClass(b.delivery_share, 'delivery'));
+      deliveryPill.className = 'pill ' + statusClass(b.delivery_share, 'delivery');
+
+      // Health Score
+      const score = healthScore(b, fotShare);
+      $('#health-score').textContent = Math.round(score);
+      const [badgeCls, badgeText] = badgeByClass(score >= 80 ? 'good' : (score >= 65 ? 'warn' : 'bad'));
+      const hb = $('#health-badge');
+      hb.className = 'badge ' + badgeCls;
+      hb.textContent = badgeText;
+
+      // Notes
+      $('#txt-notes').value = (b.notes || '');
+
+      // Bonus
+      const r = compute(b);
+      $('#bonus-amount').textContent = rub(r.payout);
+      $('#bonus-info').textContent = `База: ${rub(r.base)} · Рампа: ${Math.round(r.ramp * 100)}% · Quality: ${Math.round(r.quality * 100)}%`;
+      const st = r.ramp === 0 ? 'bad' : (r.ramp < 1 ? 'warn' : 'good');
+      const tx = r.ramp === 0 ? 'Недопуск' : (r.ramp < 1 ? 'Частично' : 'Полный');
+      const el = $('#bonus-elig');
+      el.className = 'pill ' + st;
+      el.textContent = tx;
+    }
+
+    function labelFor(cls) { return cls === 'good' ? 'ОК' : (cls === 'warn' ? 'Внимание' : 'Проблема'); }
+    function mergeWorst(a, b) { 
+      if (a === 'bad' || b === 'bad') return 'bad'; 
+      if (a === 'warn' || b === 'warn') return 'warn'; 
+      return 'good'; 
+    }
+
+    function fillRating() {
+      const tbody = $('#tbl-rating tbody');
+      tbody.innerHTML = '';
+      
+      const items = DATA.branches.map(b => {
+        const plan = +b.revenue_plan || 0, fact = +b.revenue_fact || 0;
+        const fulfill = plan ? fact / plan : 0;
+        return { name: b.branch, plan, fact, fulfill };
+      }).sort((a, b) => b.fulfill - a.fulfill);
+
+      items.forEach((it, idx) => {
+        const tr = document.createElement('tr');
+        const medal = idx === 0 ? '🥇' : (idx === 1 ? '🥈' : (idx === 2 ? '🥉' : ''));
+        tr.innerHTML = `
+          <td>${medal} ${idx + 1}</td>
+          <td>${it.name}</td>
+          <td>${pct(it.fulfill)}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function toggleEdit() {
+      editMode = !editMode;
+      
+      if (editMode) {
+        // Входим в режим редактирования
+        $('#edit').textContent = '💾 Сохранить';
+        showEditForm();
+        
+        if (isTelegram) {
+          // В Telegram используем Main Button для сохранения
+          tg.MainButton.setText("💾 Сохранить данные");
+          tg.MainButton.show();
+          tg.MainButton.onClick(saveAndExitEdit);
         }
-        function toggleTheme() {
-            const body = document.body;
-            const currentTheme = body.getAttribute('data-theme');
-            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
-            body.setAttribute('data-theme', newTheme);
-            localStorage.setItem('theme', newTheme);
-            const icon = document.querySelector('.theme-toggle i');
-            icon.className = newTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
-            updateChartTheme();
+      } else {
+        // Выход из режима редактирования с сохранением (для веб-версии)
+        $('#edit').textContent = '✏️ Редактировать';
+        saveEditData();
+        
+        if (isTelegram) {
+          tg.MainButton.hide();
         }
-        function updateChartTheme() {
-            const textColor = getComputedStyle(document.body).getPropertyValue('--text-primary').trim();
-            const updateOptions = { 
-                scales: { 
-                    x: { title: { color: textColor }, ticks: { color: textColor } }, 
-                    y: { title: { color: textColor }, ticks: { color: textColor } } 
-                }, 
-                plugins: { legend: { labels: { color: textColor } } } 
-            };
-            if (barChart1) {
-                Object.assign(barChart1.options.scales, updateOptions.scales);
-                barChart1.options.plugins.legend.labels.color = textColor;
-                barChart1.update();
-            }
-            if (barChart2) {
-                Object.assign(barChart2.options.scales, updateOptions.scales);
-                barChart2.options.plugins.legend.labels.color = textColor;
-                barChart2.update();
-            }
+        
+        render();
+        fillRating();
+      }
+    }
+
+    function showEditForm() {
+      const b = curr();
+      const grid = $('#kpi-grid');
+      grid.innerHTML = '';
+      
+      const fields = [
+        ['revenue_plan', 'План выручки, ₽', 'number'],
+        ['revenue_fact', 'Факт выручки, ₽', 'number'],
+        ['avg_check', 'Средний чек, ₽', 'number'],
+        ['guests', 'Гостей, чел', 'number'],
+        ['delivery_share', 'Доля доставки (0-1)', 'number'],
+        ['fot_amount', 'ФОТ, ₽', 'number'],
+        ['reviews_rating_avg', 'Отзывы (1-5)', 'number'],
+        ['reviews_count_neg', 'Негативных отзывов', 'number'],
+        ['late_count', 'Опоздания', 'number'],
+        ['auditor_score', 'Аудит (0-100)', 'number'],
+        ['control_purchase_score', 'Закупка (0-100)', 'number'],
+        ['mystery_score', 'Тайный гость (0-100)', 'number']
+      ];
+
+      fields.forEach(([key, label, type]) => {
+        const val = b[key] ?? '';
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <div class="title">${label}</div>
+          <input type="${type}" data-key="${key}" value="${val}" 
+                 style="width: 100%; margin-top: 8px;" />
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function saveEditData() {
+      $$('#kpi-grid input').forEach(inp => {
+        const k = inp.dataset.key;
+        let v = inp.value;
+        if (k === 'delivery_share' || k === 'reviews_rating_avg') {
+          curr()[k] = parseFloat(v) || 0;
+        } else {
+          curr()[k] = +v || 0;
         }
-        function getStatusClass(fulfill) {
-            if (fulfill >= 100) return 'good';
-            if (fulfill >= 80) return 'warn';
-            return 'bad';
-        }
-        function showToast(message, type = 'success') {
-            const toast = document.getElementById('toast');
-            if (!toast) return;
-            toast.textContent = message;
-            toast.style.background = type === 'error' ? 'var(--danger-color)' : 'var(--success-color)';
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 3000);
-        }
-        function getDiffDays(startDateStr, endDateStr) {
-            const start = new Date(startDateStr);
-            const end = new Date(endDateStr);
-            if (isNaN(start) || isNaN(end)) return 1;
-            const diffTime = Math.abs(end - start);
-            return Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
-        }
-        // --- ЛОГИКА ЗАГРУЗКИ ДАННЫХ ---
-        async function fetchDataForDate(dateStr) {
-            const todayStr = getTodayDateString();
-            const isToday = dateStr === todayStr;
-            // Для сегодняшней даты пробуем сначала latest, потом daily
-            const urls = [];
-            if (isToday) {
-                urls.push(LATEST_DATA_URL + '?t=' + Date.now()); // latest - сначала с timestamp
-                urls.push(`${BASE_DATA_URL}${dateStr}_revenue.json?t=${Date.now()}`); // daily архив
-            } else {
-                urls.push(`${BASE_DATA_URL}${dateStr}_revenue.json?t=${Date.now()}`); // только daily
-            }
-            for (const url of urls) {
-                try {
-                    const response = await fetch(url);
-                    if (response.ok) {
-                        const data = await response.json();
-                        // Для latest данных проверяем дату
-                        if (url.includes('revenue.json') && !url.includes('daily')) {
-                            if (data.date && data.date !== dateStr) {
-                                console.warn(`Latest данные содержат другую дату (${data.date}), пропускаем`);
-                                continue;
-                            }
-                        }
-                        let calculatedRevenue = 0;
-                        let calculatedOrders = 0;
-                        let calculatedDeliveryOrders = 0;
-                        let calculatedPickupOrders = 0;
-                        let calculatedCafeOrders = 0;
-                        const allVenues = { ...data.year_round, ...data.seasonal };
-                        Object.values(allVenues).forEach(stats => {
-                            calculatedRevenue += stats.total_revenue || 0;
-                            calculatedOrders += stats.total_orders || 0;
-                            calculatedDeliveryOrders += stats.delivery_orders || 0;
-                            calculatedPickupOrders += stats.pickup_orders || 0;
-                            calculatedCafeOrders += stats.cafe_orders || 0;
-                        });
-                        const planRevenue = data.plan?.total_revenue || DAILY_NETWORK_PLAN;
-                        const planOrders = data.plan?.total_orders || 1000;
-                        const result = {
-                            ...data,
-                            plan: { total_revenue: planRevenue, total_orders: planOrders },
-                            total: {
-                                total_revenue: calculatedRevenue,
-                                total_orders: calculatedOrders,
-                                total_delivery_orders: calculatedDeliveryOrders,
-                                total_pickup_orders: calculatedPickupOrders,
-                                total_cafe_orders: calculatedCafeOrders
-                            },
-                            _source: url.includes('revenue.json') && !url.includes('daily') ? 'latest' : 'daily'
-                        };
-                        dataCache[dateStr] = result;
-                        return result;
-                    }
-                } catch (error) {
-                    console.warn(`Не удалось загрузить из ${url}: ${error.message}`);
-                }
-            }
-            console.warn(`Файл для ${dateStr} не найден, возвращаем пустые данные`);
-            return {
-                date: dateStr, time: "00:00", year_round: {}, seasonal: {}, 
-                plan: { total_revenue: DAILY_NETWORK_PLAN, total_orders: 1000 },
-                total: { 
-                    total_revenue: 0, 
-                    total_orders: 0,
-                    total_delivery_orders: 0,
-                    total_pickup_orders: 0,
-                    total_cafe_orders: 0
-                },
-                _source: 'empty'
-            };
-        }
-        async function loadData(startDateStr, endDateStr) {
-            const diffDays = getDiffDays(startDateStr, endDateStr);
-            let combinedData = {
-                year_round: {}, seasonal: {}, 
-                total: { 
-                    total_revenue: 0, 
-                    total_orders: 0,
-                    total_delivery_orders: 0,
-                    total_pickup_orders: 0,
-                    total_cafe_orders: 0
-                },
-                date: `${startDateStr} - ${endDateStr}`,
-                time: "23:59",
-                _sources: new Set()
-            };
-            const dateList = [];
-            let currentDate = new Date(startDateStr);
-            const endDate = new Date(endDateStr);
-            if (isNaN(currentDate) || isNaN(endDate) || currentDate > endDate) {
-                // Для некорректных дат используем дневной план
-                combinedData.plan = { total_revenue: DAILY_NETWORK_PLAN * diffDays, total_orders: 1000 * diffDays };
-                return combinedData;
-            }
-            while (currentDate <= endDate) {
-                dateList.push(currentDate.toISOString().split('T')[0]);
-                currentDate.setDate(currentDate.getDate() + 1);
-            }
-            let totalDailyPlanRevenue = 0;
-            let totalDailyPlanOrders = 0;
-            let totalActualRevenue = 0;
-            let totalActualOrders = 0;
-            let totalActualDeliveryOrders = 0;
-            let totalActualPickupOrders = 0;
-            let totalActualCafeOrders = 0;
-            const promises = dateList.map(dateStr => fetchDataForDate(dateStr));
-            const dailyResults = await Promise.all(promises);
-            dailyResults.forEach(dailyData => {
-                totalActualRevenue += dailyData.total.total_revenue || 0;
-                totalActualOrders += dailyData.total.total_orders || 0;
-                totalActualDeliveryOrders += dailyData.total.total_delivery_orders || 0;
-                totalActualPickupOrders += dailyData.total.total_pickup_orders || 0;
-                totalActualCafeOrders += dailyData.total.total_cafe_orders || 0;
-                combinedData._sources.add(dailyData._source);
-                const venuesToCombine = { ...dailyData.year_round, ...dailyData.seasonal };
-                for (const venue in venuesToCombine) {
-                    const stats = venuesToCombine[venue];
-                    let existingStats = combinedData.year_round[venue] || combinedData.seasonal[venue];
-                    if (!existingStats) {
-                        const target = dailyData.year_round[venue] ? combinedData.year_round : combinedData.seasonal;
-                        target[venue] = { ...stats };
-                    } else {
-                        for (const key in stats) {
-                            if (typeof stats[key] === 'number') {
-                                existingStats[key] = (existingStats[key] || 0) + (stats[key] || 0);
-                            }
-                        }
-                    }
-                }
-                // Рассчитываем дневной план на основе месячного плана из данных
-                const dailyPlanRevenue = calculateDailyPlanFromMonthly(dailyData.plan?.total_revenue, dailyData.date);
-                const dailyPlanOrders = calculateDailyPlanFromMonthly(dailyData.plan?.total_orders, dailyData.date, false);
-                totalDailyPlanRevenue += dailyPlanRevenue;
-                totalDailyPlanOrders += dailyPlanOrders;
-            });
-            combinedData.total = {
-                total_revenue: totalActualRevenue,
-                total_orders: totalActualOrders,
-                total_delivery_orders: totalActualDeliveryOrders,
-                total_pickup_orders: totalActualPickupOrders,
-                total_cafe_orders: totalActualCafeOrders
-            };
-            combinedData.plan = {
-                total_revenue: totalDailyPlanRevenue,
-                total_orders: totalDailyPlanOrders
-            };
-            if (diffDays === 1 && dailyResults[0].time !== "00:00") {
-                combinedData.time = dailyResults[0].time;
-            }
-            return combinedData;
-        }
-        // --- РЕНДЕРИНГ ---
-        function renderMetrics(data) {
-            const total = data.total || { 
-                total_revenue: 0, 
-                total_orders: 0,
-                total_delivery_orders: 0,
-                total_pickup_orders: 0,
-                total_cafe_orders: 0
-            };
-            const plan = data.plan || { total_revenue: DAILY_NETWORK_PLAN, total_orders: 1000 };
-            const avg_bill = total.total_orders > 0 ? total.total_revenue / total.total_orders : 0;
-            const revenueFulfill = plan.total_revenue > 0 ? (total.total_revenue / plan.total_revenue) * 100 : 0;
-            let sourceInfo = '';
-            if (data._sources) {
-                const sources = Array.from(data._sources);
-                if (sources.includes('latest')) {
-                    sourceInfo = '<div class="data-source-info">📊 Данные в реальном времени (автообновление)</div>';
-                } else if (sources.includes('daily')) {
-                    sourceInfo = '<div class="data-source-info">📁 Архивные данные</div>';
-                }
-            }
-            // Отладочная информация о плане
-            const debugInfo = `<div class="data-source-info">📈 План расчитан для периода: ${fmt.format(plan.total_revenue.toFixed(0))} ₽</div>`;
-            document.getElementById('metrics').innerHTML = `
-                <div class="metric-card fade-in">
-                    <div class="metric-icon"><i class="fas fa-ruble-sign"></i></div>
-                    <div class="metric-value">${fmt.format(total.total_revenue.toFixed(0))} ₽</div>
-                    <div class="metric-label">Выручка за период</div>
-                    ${sourceInfo}
-                    ${debugInfo}
-                </div>
-                <div class="metric-card fade-in">
-                    <div class="metric-icon"><i class="fas fa-shopping-cart"></i></div>
-                    <div class="metric-value">${total.total_orders}</div>
-                    <div class="metric-label">Всего заказов</div>
-                    <div class="orders-breakdown">
-                        <div class="order-type delivery">
-                            <div class="order-type-value">${total.total_delivery_orders || 0}</div>
-                            <div class="order-type-label">Доставка</div>
-                        </div>
-                        <div class="order-type pickup">
-                            <div class="order-type-value">${total.total_pickup_orders || 0}</div>
-                            <div class="order-type-label">Самовывоз</div>
-                        </div>
-                        <div class="order-type cafe">
-                            <div class="order-type-value">${total.total_cafe_orders || 0}</div>
-                            <div class="order-type-label">Кафе</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="metric-card fade-in">
-                    <div class="metric-icon"><i class="fas fa-receipt"></i></div>
-                    <div class="metric-value">${fmt.format(avg_bill.toFixed(0))} ₽</div>
-                    <div class="metric-label">Средний чек</div>
-                </div>
-                <div class="metric-card fade-in">
-                    <div class="metric-icon"><i class="fas fa-percent"></i></div>
-                    <div class="metric-value ${getStatusClass(revenueFulfill)}">${revenueFulfill.toFixed(1)}%</div>
-                    <div class="metric-label">Выполнение плана (Выручка)</div>
-                </div>
-            `;
-            const bar = document.getElementById('plan-bar');
-            const progressText = document.getElementById('progress-text');
-            const currentValue = document.getElementById('current-value');
-            const planValue = document.getElementById('plan-value');
-            if (bar && progressText && currentValue && planValue) {
-                bar.className = `progress-fill ${getStatusClass(revenueFulfill)}`;
-                bar.style.width = Math.min(revenueFulfill, 100) + '%';
-                progressText.textContent = `${revenueFulfill.toFixed(1)}%`;
-                currentValue.textContent = `${fmt.format(total.total_revenue.toFixed(0))} ₽`;
-                planValue.textContent = `${fmt.format(plan.total_revenue.toFixed(0))} ₽`;
-            }
-            if (revenueFulfill > 100) {
-                confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
-                // Добавляем анимацию праздника к карточке выполнения плана
-                const planCard = document.querySelector('.metric-card:last-child');
-                if (planCard) {
-                    planCard.classList.add('celebrate');
-                    setTimeout(() => planCard.classList.remove('celebrate'), 1000);
-                }
-            }
-        }
-        function renderVenueCard(venue, stats, periodDays) {
-            const dailyPlan = fixedDailyPlans[venue] || DAILY_NETWORK_PLAN;
-            // Рассчитываем план для всего периода
-            const planRevenueForPeriod = dailyPlan * periodDays;
-            const fulfill = planRevenueForPeriod > 0 ? (stats.total_revenue || 0) / planRevenueForPeriod * 100 : 0;
-            const statusClass = getStatusClass(fulfill);
-            return `
-                <div class="venue-card fade-in">
-                    <button class="venue-details-btn" onclick="openVenueModal('${venue}', ${JSON.stringify(stats).replace(/'/g, "&#39;")}, ${periodDays})">
-                        <i class="fas fa-chart-bar"></i>
-                    </button>
-                    <div class="venue-name">${venue}</div>
-                    <div class="venue-metric"><span>Выручка:</span> <span class="venue-metric-value ${statusClass}">${fmt.format((stats.total_revenue || 0).toFixed(0))} ₽</span></div>
-                    <div class="venue-metric"><span>Заказы:</span> <span>${stats.total_orders || 0}</span></div>
-                    <div class="venue-metric"><span>Доставка:</span> <span>${fmt.format((stats.delivery_revenue || 0).toFixed(0))} ₽</span></div>
-                    <div class="venue-metric"><span>Кафе:</span> <span>${fmt.format((stats.cafe_revenue || 0).toFixed(0))} ₽</span></div>
-                    <div class="venue-metric"><span>Самовывоз:</span> <span>${fmt.format((stats.pickup_revenue || 0).toFixed(0))} ₽</span></div>
-                    <div class="orders-breakdown" style="margin-top: 10px;">
-                        <div class="order-type delivery">
-                            <div class="order-type-value">${stats.delivery_orders || 0}</div>
-                            <div class="order-type-label">Доставка</div>
-                        </div>
-                        <div class="order-type pickup">
-                            <div class="order-type-value">${stats.pickup_orders || 0}</div>
-                            <div class="order-type-label">Самовывоз</div>
-                        </div>
-                        <div class="order-type cafe">
-                            <div class="order-type-value">${stats.cafe_orders || 0}</div>
-                            <div class="order-type-label">Кафе</div>
-                        </div>
-                    </div>
-                    <div style="margin-top: 10px;">
-                        <div class="progress-bar" style="height: 8px;">
-                            <div class="progress-fill ${statusClass}" style="width: ${Math.min(fulfill, 100)}%;"></div>
-                        </div>
-                        <small>${fulfill.toFixed(1)}% от плана (${fmt.format(planRevenueForPeriod.toFixed(0))} ₽)</small>
-                    </div>
-                </div>
-            `;
-        }
-        function renderVenues(data, containerId) {
-            const key = containerId === 'year-round' ? 'year_round' : 'seasonal';
-            const venues = data[key] || {};
-            const container = document.getElementById(containerId);
-            if (!container) return;
-            if (Object.keys(venues).length === 0) {
-                container.innerHTML = '<div class="error-msg">Нет данных по филиалам</div>';
-                return;
-            }
-            // Рассчитываем количество дней в периоде
-            const periodDays = getDiffDays(currentStartDate, currentEndDate);
-            const sortedVenues = Object.entries(venues).sort((a, b) => (b[1].total_revenue || 0) - (a[1].total_revenue || 0));
-            container.innerHTML = sortedVenues.map(([venue, stats]) => renderVenueCard(venue, stats, periodDays)).join('');
-        }
-        // --- ФУНКЦИИ ГРАФИКОВ ---
-        function renderCharts(data) {
-            const allVenues = { ...data.year_round, ...data.seasonal };
-            const labels = Object.keys(allVenues).length > 0 ? Object.keys(allVenues) : ['Нет данных'];
-            const revenues = labels.map(l => allVenues[l]?.total_revenue || 0);
-            const ctxBar1 = document.getElementById('barChart1')?.getContext('2d');
-            const textColor = getComputedStyle(document.body).getPropertyValue('--text-primary').trim();
-            if (ctxBar1) {
-                if (barChart1) barChart1.destroy();
-                barChart1 = new Chart(ctxBar1, {
-                    type: 'bar',
-                    data: { 
-                        labels, 
-                        datasets: [{ 
-                            label: 'Выручка ₽', 
-                            data: revenues, 
-                            backgroundColor: ['#4285F4', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16', '#f97316'] 
-                        }] 
-                    },
-                    options: {
-                        responsive: true,
-                        scales: {
-                            x: { title: { display: true, text: 'Филиалы', color: textColor }, ticks: { color: textColor } },
-                            y: { beginAtZero: true, title: { display: true, text: 'Выручка ₽', color: textColor }, ticks: { color: textColor } }
-                        },
-                        plugins: { legend: { position: 'bottom', labels: { color: textColor } } }
-                    }
-                });
-            }
-            updateBarChart2(data);
-        }
-        function updateBarChart2(data) {
-            const dataType = document.getElementById('dataType').value;
-            const allVenues = data ? { ...data.year_round, ...data.seasonal } : {};
-            const labels = Object.keys(allVenues).length > 0 ? Object.keys(allVenues) : ['Нет данных'];
-            const ctxBar2 = document.getElementById('barChart2')?.getContext('2d');
-            const textColor = getComputedStyle(document.body).getPropertyValue('--text-primary').trim();
-            let dataValues;
-            switch(dataType) {
-                case 'orders':
-                    dataValues = labels.map(l => allVenues[l]?.total_orders || 0);
-                    break;
-                case 'delivery':
-                    dataValues = labels.map(l => allVenues[l]?.delivery_revenue || 0);
-                    break;
-                case 'cafe':
-                    dataValues = labels.map(l => allVenues[l]?.cafe_revenue || 0);
-                    break;
-                case 'pickup':
-                    dataValues = labels.map(l => allVenues[l]?.pickup_revenue || 0);
-                    break;
-                default: // revenue
-                    dataValues = labels.map(l => allVenues[l]?.total_revenue || 0);
-            }
-            if (ctxBar2) {
-                if (barChart2) barChart2.destroy();
-                barChart2 = new Chart(ctxBar2, {
-                    type: 'bar',
-                    data: { 
-                        labels, 
-                        datasets: [{ 
-                            label: `${dataType === 'orders' ? 'Заказы' : 'Выручка ₽'}`, 
-                            data: dataValues, 
-                            backgroundColor: ['#4285F4', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16', '#f97316'] 
-                        }] 
-                    },
-                    options: {
-                        responsive: true,
-                        scales: {
-                            x: { title: { display: true, text: 'Филиалы', color: textColor }, ticks: { color: textColor } },
-                            y: { beginAtZero: true, title: { display: true, text: dataType === 'orders' ? 'Количество заказов' : 'Выручка ₽', color: textColor }, ticks: { color: textColor } }
-                        },
-                        plugins: { legend: { position: 'bottom', labels: { color: textColor } } }
-                    }
-                });
-            }
-        }
-        // --- УПРАВЛЕНИЕ ЗАГРУЗКОЙ ---
-        function loadCustomData() {
-            const startDate = document.getElementById('start-date').value;
-            const endDate = document.getElementById('end-date').value;
-            if (!startDate || !endDate) {
-                showToast('Пожалуйста, выберите начальную и конечную дату', 'error');
-                return;
-            }
-            if (new Date(startDate) > new Date(endDate)) {
-                showToast('Начальная дата не может быть позже конечной', 'error');
-                return;
-            }
-            const periodText = (startDate === endDate) ? 
-                `за день ${new Date(startDate).toLocaleDateString('ru-RU')}` : 
-                `за период с ${new Date(startDate).toLocaleDateString('ru-RU')} по ${new Date(endDate).toLocaleDateString('ru-RU')}`;
-            showToast(`Загрузка данных ${periodText}`);
-            load(startDate, endDate);
-        }
-        async function load(startDateStr, endDateStr) {
-            const updateEl = document.getElementById('last-update');
-            if (updateEl) updateEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Загрузка...';
-            currentStartDate = startDateStr;
-            currentEndDate = endDateStr;
-            // Принудительно очищаем кэш для сегодняшней даты, чтобы всегда брать актуальные данные
-            const todayStr = getTodayDateString();
-            if (isCurrentBusinessDay(startDateStr) || isCurrentBusinessDay(endDateStr)) {
-                delete dataCache[todayStr];
-            }
-            try {
-                const data = await loadData(startDateStr, endDateStr); 
-                dataCache.current = data;
-                // Проверяем, есть ли новые данные
-                const currentDataHash = JSON.stringify(data.total);
-                if (lastDataHash && lastDataHash !== currentDataHash) {
-                    showNewDataNotification();
-                }
-                lastDataHash = currentDataHash;
-                let dateDisplay;
-                if (startDateStr && endDateStr) {
-                    dateDisplay = (startDateStr === endDateStr) ? 
-                        new Date(startDateStr).toLocaleDateString('ru-RU') : 
-                        `${new Date(startDateStr).toLocaleDateString('ru-RU')} - ${new Date(endDateStr).toLocaleDateString('ru-RU')}`;
-                } else {
-                    dateDisplay = 'Нет данных';
-                }
-                if (updateEl) updateEl.innerHTML = `<i class="fas fa-check-circle"></i> Обновлено: ${data.time} (${dateDisplay})`;
-                renderMetrics(data);
-                renderVenues(data, 'year-round');
-                renderVenues(data, 'seasonal');
-                renderCharts(data); 
-                updateChartTheme();
-            } catch (e) {
-                console.error('Ошибка загрузки:', e);
-                if (updateEl) updateEl.innerHTML = '<i class="fas fa-exclamation-triangle"></i> Ошибка загрузки';
-                document.getElementById('metrics').innerHTML = '<div class="error-msg">Ошибка загрузки метрик</div>';
-                document.getElementById('year-round').innerHTML = '<div class="error-msg">Ошибка загрузки филиалов</div>';
-                document.getElementById('seasonal').innerHTML = '<div class="error-msg">Ошибка загрузки филиалов</div>';
-                showToast('Критическая ошибка загрузки данных', 'error');
-            } finally {
-                document.querySelectorAll('.metric-card, .venue-card').forEach((el, index) => {
-                    setTimeout(() => el.classList.add('fade-in'), index * 50);
-                });
-            }
-        }
-        // --- АВТООБНОВЛЕНИЕ ---
-        function setupAutoRefresh() {
-            // Очищаем предыдущий интервал
-            if (autoRefreshInterval) {
-                clearInterval(autoRefreshInterval);
-            }
-            // Запускаем автообновление каждые 4 минуты
-            autoRefreshInterval = setInterval(() => {
-                const businessDay = getCurrentBusinessDay();
-                const todayStr = businessDay.toISOString().split('T')[0];
-                // Автообновляем только если просматриваем текущий бизнес-день
-                if (currentStartDate === todayStr && currentEndDate === todayStr) {
-                    console.log('Автообновление данных...');
-                    delete dataCache[todayStr]; // Очищаем кэш
-                    load(currentStartDate, currentEndDate);
-                    showToast('Данные автоматически обновлены', 'success');
-                }
-            }, AUTO_REFRESH_INTERVAL);
-        }
-        // --- НОВЫЕ ФИЧИ ---
-        // Модальное окно с деталями филиала
-        function openVenueModal(venue, stats, periodDays) {
-            const modal = document.getElementById('venueModal');
-            const modalVenueName = document.getElementById('modalVenueName');
-            const modalVenueDetails = document.getElementById('modalVenueDetails');
-            const dailyPlan = fixedDailyPlans[venue] || DAILY_NETWORK_PLAN;
-            const planRevenueForPeriod = dailyPlan * periodDays;
-            const fulfill = planRevenueForPeriod > 0 ? (stats.total_revenue || 0) / planRevenueForPeriod * 100 : 0;
-            modalVenueName.textContent = venue;
-            modalVenueDetails.innerHTML = `
-                <div class="venue-metric"><span>Выручка:</span> <span>${fmt.format((stats.total_revenue || 0).toFixed(0))} ₽</span></div>
-                <div class="venue-metric"><span>Заказы:</span> <span>${stats.total_orders || 0}</span></div>
-                <div class="venue-metric"><span>Выполнение плана:</span> <span>${fulfill.toFixed(1)}%</span></div>
-                <h4 style="margin-top: 15px;">Выручка по типам:</h4>
-                <div class="venue-metric"><span>Доставка:</span> <span>${fmt.format((stats.delivery_revenue || 0).toFixed(0))} ₽</span></div>
-                <div class="venue-metric"><span>Кафе:</span> <span>${fmt.format((stats.cafe_revenue || 0).toFixed(0))} ₽</span></div>
-                <div class="venue-metric"><span>Самовывоз:</span> <span>${fmt.format((stats.pickup_revenue || 0).toFixed(0))} ₽</span></div>
-                <h4 style="margin-top: 15px;">Заказы по типам:</h4>
-                <div class="venue-metric"><span>Доставка:</span> <span>${stats.delivery_orders || 0}</span></div>
-                <div class="venue-metric"><span>Кафе:</span> <span>${stats.cafe_orders || 0}</span></div>
-                <div class="venue-metric"><span>Самовывоз:</span> <span>${stats.pickup_orders || 0}</span></div>
-                <div style="margin-top: 15px; padding: 10px; background: rgba(66, 133, 244, 0.1); border-radius: 8px;">
-                    <strong>План:</strong> ${fmt.format(planRevenueForPeriod.toFixed(0))} ₽
-                </div>
-            `;
-            modal.style.display = 'block';
-        }
-        // Уведомление о новых данных
-        function showNewDataNotification() {
-            const notification = document.getElementById('new-data-notification');
-            notification.style.display = 'block';
-            setTimeout(() => {
-                notification.style.display = 'none';
-            }, 5000);
-        }
-        // Закрытие модального окна
-        document.querySelector('.close').addEventListener('click', function() {
-            document.getElementById('venueModal').style.display = 'none';
+      });
+    }
+
+    function saveAndExitEdit() {
+      saveEditData();
+      editMode = false;
+      $('#edit').textContent = '✏️ Редактировать';
+      
+      tg.MainButton.hide();
+      tg.showPopup({
+        title: "Сохранено",
+        message: "Данные успешно обновлены",
+        buttons: [{ type: "ok" }]
+      });
+      
+      render();
+      fillRating();
+    }
+
+    function copyChecklist() {
+      const txt = $('#txt-notes').value.trim();
+      if (!txt) { 
+        showAlert('Нет текста заметок.');
+        return; 
+      }
+      
+      const lines = txt.split(/\n+/).map(s => s.replace(/^[-—•\s]+/, '').trim()).filter(Boolean);
+      const checklist = lines.map(s => `□ ${s}`).join('\n');
+      
+      if (isTelegram) {
+        tg.sendData(JSON.stringify({ type: 'checklist', data: checklist }));
+        tg.showPopup({
+          title: "Скопировано",
+          message: "Чек-лист готов к использованию",
+          buttons: [{ type: "ok" }]
         });
-        // Закрытие модального окна при клике вне его
-        window.addEventListener('click', function(event) {
-            const modal = document.getElementById('venueModal');
-            if (event.target === modal) {
-                modal.style.display = 'none';
-            }
+      } else {
+        navigator.clipboard.writeText(checklist).then(() => {
+          showAlert('Чек-лист скопирован в буфер обмена');
+        }).catch(() => {
+          showAlert('Не удалось скопировать в буфер обмена');
         });
-        // Обновление при клике на уведомление о новых данных
-        document.getElementById('new-data-notification').addEventListener('click', function() {
-            load(currentStartDate, currentEndDate);
-            this.style.display = 'none';
+      }
+    }
+
+    function exportData() {
+      const dataStr = JSON.stringify(DATA, null, 2);
+      if (isTelegram) {
+        tg.sendData(JSON.stringify({ type: 'export', data: DATA }));
+        tg.showPopup({
+          title: "Экспорт",
+          message: "Данные отправлены в Telegram",
+          buttons: [{ type: "ok" }]
         });
-        // --- PDF Export ---
-        function exportPDF(filter = 'all') {
-            const data = dataCache.current;
-            if (!data || !data.date) {
-                showToast('Нет данных для экспорта', 'error');
-                return;
-            }
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-            function escapeText(text) {
-                return text.replace(/[а-яА-ЯёЁ]/g, (char) => {
-                    const translitMap = { 'а': 'a', 'б': 'b', 'в': 'v', 'г': 'g', 'д': 'd', 'е': 'e', 'ё': 'yo', 'ж': 'zh', 'з': 'z', 'и': 'i', 'й': 'y', 'к': 'k', 'л': 'l', 'м': 'm', 'н': 'n', 'о': 'o', 'п': 'p', 'р': 'r', 'с': 's', 'т': 't', 'у': 'u', 'ф': 'f', 'х': 'kh', 'ц': 'ts', 'ч': 'ch', 'ш': 'sh', 'щ': 'sch', 'ъ': '"', 'ы': 'y', 'ь': "'", 'э': 'e', 'ю': 'yu', 'я': 'ya', 'А': 'A', 'Б': 'B', 'В': 'V', 'Г': 'G', 'Д': 'D', 'Е': 'E', 'Ё': 'Yo', 'Ж': 'Zh', 'З': 'Z', 'И': 'I', 'Й': 'Y', 'К': 'K', 'Л': 'L', 'М': 'M', 'Н': 'N', 'О': 'O', 'П': 'P', 'Р': 'R', 'С': 'S', 'Т': 'T', 'У': 'U', 'Ф': 'F', 'Х': 'Kh', 'Ц': 'Ts', 'Ч': 'Ch', 'Ш': 'Sh', 'Щ': 'Sch', 'Ъ': '"', 'Ы': 'Y', 'Ь': "'", 'Э': 'E', 'Ю': 'Yu', 'Я': 'Ya' };
-                    return translitMap[char] || char;
-                });
-            }
-            doc.setFont("helvetica");
-            doc.setFontSize(14);
-            doc.text(escapeText('Чи-Фань Отчет по Выручке'), 10, 10);
-            doc.setFontSize(10);
-            const dateText = `Дата отчета: ${data.date} ${data.time || ''}`;
-            doc.text(dateText, 10, 15);
-            let y = 25;
-            const venues = filter === 'year-round' ? data.year_round : filter === 'seasonal' ? data.seasonal : { ...data.year_round, ...data.seasonal };
-            const sortedVenues = Object.entries(venues || {}).sort((a, b) => (b[1].total_revenue || 0) - (a[1].total_revenue || 0));
-            sortedVenues.forEach(([v, s]) => {
-                const text = `${v}: Выручка ${fmt.format((s.total_revenue || 0).toFixed(0))} ₽, Заказы ${s.total_orders || 0}`;
-                doc.text(escapeText(text), 10, y);
-                y += 7;
-                if (y > 280) {
-                    doc.addPage();
-                    y = 15;
-                }
-            });
-            doc.save(`chifan_report_${currentStartDate.replace(/-/g, '_')}_${filter}.pdf`);
-            showToast('PDF экспортирован!');
+      } else {
+        const blob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'chifan-data.json';
+        a.click();
+        URL.revokeObjectURL(url);
+        showAlert('JSON файл скачан');
+      }
+    }
+
+    function importData() {
+      $('#fileInput').click();
+    }
+
+    function handleFileImport(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const importedData = JSON.parse(e.target.result);
+          
+          // Валидация структуры данных
+          if (!importedData.branches || !Array.isArray(importedData.branches)) {
+            throw new Error('Неверный формат JSON: отсутствует branches');
+          }
+          
+          if (importedData.branches.length === 0) {
+            throw new Error('Нет данных о филиалах');
+          }
+
+          DATA = importedData;
+          $('#m').value = DATA.month;
+          updateBranchSelect();
+          render();
+          fillRating();
+          
+          showAlert(`Успешно импортировано ${DATA.branches.length} филиалов`, 'Импорт данных');
+          
+        } catch (error) {
+          showAlert('Ошибка при импорте JSON: ' + error.message, 'Ошибка');
         }
-        // --- Инициализация ---
-        if (localStorage.getItem('theme') === 'dark') toggleTheme();
-        const todayStr = getTodayDateString();
-        document.getElementById('start-date').value = todayStr;
-        document.getElementById('end-date').value = todayStr;
-        // Устанавливаем активную кнопку "Сегодня" при загрузке
-        document.querySelector('.period-btn').classList.add('active');
-        // Обновляем информацию о бизнес-дне
-        updateBusinessDayInfo();
-        load(todayStr, todayStr); 
-        // Запускаем автообновление
-        setupAutoRefresh();
-        function updateBusinessDayInfo() {
-            const businessDayDate = getCurrentBusinessDay().toISOString().split('T')[0];
-            document.getElementById('business-day-date').textContent = businessDayDate;
-        }
-    </script>
+      };
+      reader.readAsText(file);
+      
+      // Сброс input для возможности повторного выбора того же файла
+      event.target.value = '';
+    }
+
+    function showCompare() {
+      const a = DATA.branches.find(x => x.branch === 'Тихая') || DATA.branches[0];
+      const b = DATA.branches.find(x => x.branch === 'Тобольская') || DATA.branches[1] || DATA.branches[0];
+      
+      const comparison = `
+🏪 Сравнение филиалов:
+
+Тихая vs Тобольская
+
+📊 Выручка: ${rub(a.revenue_fact)} vs ${rub(b.revenue_fact)}
+🎯 Выполнение: ${pct(a.revenue_fact/a.revenue_plan)} vs ${pct(b.revenue_fact/b.revenue_plan)}
+💰 Премия: ${rub(compute(a).payout)} vs ${rub(compute(b).payout)}
+⭐ Отзывы: ${a.reviews_rating_avg}★ vs ${b.reviews_rating_avg}★
+📦 Доставка: ${pct(a.delivery_share)} vs ${pct(b.delivery_share)}
+      `.trim();
+      
+      showAlert(comparison, 'Сравнение филиалов');
+    }
+
+    function showAlert(message, title = 'Информация') {
+      if (isTelegram) {
+        tg.showPopup({
+          title: title,
+          message: message,
+          buttons: [{ type: "ok" }]
+        });
+      } else {
+        alert(title + '\n\n' + message);
+      }
+    }
+
+    // Функции для темы
+    function setTheme(theme) {
+      const root = document.documentElement;
+      if (theme === 'light') {
+        root.classList.add('theme-light');
+      } else {
+        root.classList.remove('theme-light');
+      }
+      localStorage.setItem('chifan-theme', theme);
+      
+      // Обновляем значок
+      const themeToggle = document.getElementById('themeToggle');
+      if (theme === 'light') {
+        themeToggle.textContent = '🌙';
+        themeToggle.title = 'Переключить на тёмную тему';
+      } else {
+        themeToggle.textContent = '☀️';
+        themeToggle.title = 'Переключить на светлую тему';
+      }
+    }
+
+    function initTheme() {
+      const saved = localStorage.getItem('chifan-theme');
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const theme = saved || (prefersDark ? 'dark' : 'light');
+      setTheme(theme);
+    }
+
+    function toggleTheme() {
+      const isLight = document.documentElement.classList.contains('theme-light');
+      setTheme(isLight ? 'dark' : 'light');
+    }
+
+    // Обработчики событий
+    $('#b').addEventListener('change', render);
+    $('#m').addEventListener('change', e => {
+      DATA.month = e.target.value;
+      DATA.branches.forEach(x => x.month = DATA.month);
+      render();
+      fillRating();
+    });
+    
+    $('#edit').addEventListener('click', toggleEdit);
+    $('#btn-compare').addEventListener('click', showCompare);
+    $('#export').addEventListener('click', exportData);
+    $('#import').addEventListener('click', importData);
+    $('#btn-copy').addEventListener('click', copyChecklist);
+    $('#fileInput').addEventListener('change', handleFileImport);
+    $('#themeToggle').addEventListener('click', toggleTheme);
+    
+    $('#reset').addEventListener('click', () => {
+      if (confirm('Сбросить все данные к демо-версии?')) {
+        DATA = JSON.parse(JSON.stringify(START));
+        init();
+        showAlert('Данные сброшены к демо-версии');
+      }
+    });
+
+    // Запуск приложения
+    init();
+  </script>
 </body>
 </html>
